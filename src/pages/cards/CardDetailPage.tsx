@@ -151,7 +151,7 @@ export default function CardDetailPage() {
               <p style={{ color: colors.textSecondary, fontSize: fontSize.sm, margin: 0 }}>
                 {formatShort(cycle.start_date)} – {formatShort(cycle.end_date)}
               </p>
-              <p style={{ color: colors.textPrimary, fontSize: fontSize.amountSm, fontWeight: 800, marginTop: 4, marginBottom: 0 }}>{formatMoney(cycle.total_amount)}</p>
+              <p style={{ color: colors.textPrimary, fontSize: fontSize.amountSm, fontWeight: 800, lineHeight: 1.1, marginTop: 4, marginBottom: 0 }}>{formatMoney(cycle.total_amount)}</p>
             </div>
             <CycleRing dayIndex={Math.max(1, dayIndex)} totalDays={Math.max(totalDays, 1)} />
           </div>
@@ -203,7 +203,7 @@ export default function CardDetailPage() {
               {formatShort(pending.start_date)} – {formatShort(pending.end_date)}
             </span>
           </div>
-          <p style={{ color: colors.textPrimary, fontSize: fontSize.amountSm, fontWeight: 800, marginBottom: spacing.md, marginTop: 0 }}>{formatMoney(pendingRemaining)}</p>
+          <p style={{ color: colors.textPrimary, fontSize: fontSize.amountSm, fontWeight: 800, lineHeight: 1.1, marginBottom: spacing.md, marginTop: 0 }}>{formatMoney(pendingRemaining)}</p>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
             <Icon name="calendar-outline" size={14} color={colors.danger} style={{ marginRight: 6 }} />
             <span style={{ color: colors.danger, fontSize: fontSize.sm, fontWeight: 600 }}>

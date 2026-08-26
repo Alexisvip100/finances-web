@@ -14,7 +14,7 @@ export function AmountInput({
 }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: colors.textPrimary, fontWeight: 800, marginRight: spacing.xs, fontSize: fontSize[size] }}>$</span>
+      <span style={{ color: colors.textPrimary, fontWeight: 800, lineHeight: 1.1, marginRight: spacing.xs, fontSize: fontSize[size] }}>$</span>
       <input
         value={value}
         onChange={(e) => onChangeText(e.target.value.replace(/[^0-9.]/g, ''))}
@@ -24,6 +24,7 @@ export function AmountInput({
         style={{
           color: colors.textPrimary,
           fontWeight: 800,
+          lineHeight: 1.1,
           padding: 0,
           minWidth: 40,
           fontSize: fontSize[size],

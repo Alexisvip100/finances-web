@@ -32,7 +32,7 @@ export function MetricCard({
         </span>
         {trailing}
       </div>
-      <div style={{ color: valueColor, fontWeight: 800, fontSize: fontSize[amountSize] }}>{value}</div>
+      <div style={{ color: valueColor, fontWeight: 800, fontSize: fontSize[amountSize], lineHeight: 1.1 }}>{value}</div>
     </div>
   );
 }

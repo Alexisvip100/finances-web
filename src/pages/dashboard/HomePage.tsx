@@ -92,7 +92,7 @@ export default function HomePage() {
         {loadingDashboard ? (
           <Skeleton width={180} height={fontSize.amountLg} style={{ marginBottom: spacing.lg }} />
         ) : (
-          <p style={{ color: colors.accent, fontSize: fontSize.amountLg, fontWeight: 800, marginBottom: spacing.lg }}>
+          <p style={{ color: colors.accent, fontSize: fontSize.amountLg, fontWeight: 800, lineHeight: 1.1, marginBottom: spacing.lg }}>
             {data ? formatMoney(data.available) : '—'}
           </p>
         )}

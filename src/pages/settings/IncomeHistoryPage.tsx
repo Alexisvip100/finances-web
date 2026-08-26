@@ -213,7 +213,7 @@ const styles: Record<string, React.CSSProperties> = {
   monthLabel: { color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 700, minWidth: 140, textAlign: 'center' },
   totalCard: { display: 'flex', flexDirection: 'column', background: colors.surface, borderRadius: radius.card, padding: spacing.lg, marginBottom: spacing.xl, alignItems: 'center' },
   totalLabel: { color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 800, letterSpacing: 0.6 },
-  totalValue: { color: colors.accent, fontSize: fontSize.amountSm, fontWeight: 800, marginTop: spacing.xs },
+  totalValue: { color: colors.accent, fontSize: fontSize.amountSm, fontWeight: 800, lineHeight: 1.1, marginTop: spacing.xs },
   totalMeta: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: 2 },
   filterLabel: { color: colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600, marginBottom: spacing.sm, marginTop: spacing.lg },
   incomeRow: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.surface, borderRadius: radius.card, padding: spacing.md, marginBottom: spacing.sm },

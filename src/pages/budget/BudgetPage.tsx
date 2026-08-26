@@ -13,7 +13,9 @@ import { updateSpendingGoalThunk } from '../../store/slices/authSlice';
 import { formatMoney } from '../../utils/currency';
 import { monthKeyLabel, shiftMonthKey } from '../../utils/dateHelpers';
 
-const DONUT_COLORS = [colors.accent, '#8B8F9A', '#F2565B', '#4E8DF2', '#F2B84E', '#B24EF2'];
+// Pasteles, pero separados por hue (no tonos vecinos) para que categorías
+// distintas no se confundan entre sí en la dona/leyenda.
+const DONUT_COLORS = ['#A8E0A0', '#8FC6E8', '#F2A6C6', '#C6A8E8', '#F2C48F', '#8FE0D1'];
 const DONUT_SIZE = 220;
 const DONUT_STROKE = 20;
 

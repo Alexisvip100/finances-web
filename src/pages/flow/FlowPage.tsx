@@ -66,6 +66,7 @@ export default function FlowPage() {
               color: data && Number(data.ending_balance) < 0 ? colors.danger : colors.accent,
               fontSize: fontSize.amountLg,
               fontWeight: 800,
+              lineHeight: 1.1,
             }}
           >
             {data ? formatMoney(data.ending_balance) : '—'}
@@ -95,7 +96,7 @@ export default function FlowPage() {
               style={{
                 padding: `${spacing.sm}px ${spacing.lg}px`,
                 borderRadius: radius.pill,
-                background: active ? colors.textPrimary : 'transparent',
+                background: active ? colors.accent : 'transparent',
                 color: active ? colors.black : colors.textSecondary,
                 fontWeight: 700,
                 fontSize: fontSize.sm,

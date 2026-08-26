@@ -133,13 +133,13 @@ export default function AllocatePage() {
 
       <p style={sectionLabelStyle}>MONTO A APARTAR</p>
       <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg }}>
-        <span style={{ color: colors.textPrimary, fontSize: fontSize.amountMd, fontWeight: 800, marginRight: spacing.xs }}>$</span>
+        <span style={{ color: colors.textPrimary, fontSize: fontSize.amountMd, fontWeight: 800, lineHeight: 1.1, marginRight: spacing.xs }}>$</span>
         <input
           value={amount}
           onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ''))}
           placeholder={missing.toFixed(2)}
           inputMode="decimal"
-          style={{ color: colors.textPrimary, fontSize: fontSize.amountMd, fontWeight: 800, minWidth: 80 }}
+          style={{ color: colors.textPrimary, fontSize: fontSize.amountMd, fontWeight: 800, lineHeight: 1.1, minWidth: 80 }}
         />
       </div>
 

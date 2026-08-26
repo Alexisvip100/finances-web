@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from './store';
 import { bootstrapAuth } from './store/slices/authSlice';
 import { fetchAccountsThunk } from './store/slices/accountsSlice';
 import { colors } from './theme/theme';
+import { Push, Sheet } from './components/PageTransition';
 
 import AuthPage from './pages/AuthPage';
 import AppShell from './layout/AppShell';
@@ -47,6 +49,7 @@ function LoadingScreen() {
 
 export default function App() {
   const dispatch = useAppDispatch();
+  const location = useLocation();
   const { user, bootstrapped } = useAppSelector((s) => s.auth);
   const accounts = useAppSelector((s) => s.accounts);
 
@@ -76,45 +79,49 @@ export default function App() {
 
   if (needsOnboarding) {
     return (
-      <Routes>
-        <Route path="/onboarding/concepto" element={<ConceptPage />} />
-        <Route path="/onboarding/cuentas" element={<OnboardingAccountsPage />} />
-        <Route path="/onboarding/primera-tarjeta" element={<FirstCardPage />} />
-        <Route path="/onboarding/ingreso" element={<OnboardingIncomePage />} />
-        <Route path="*" element={<Navigate to="/onboarding/concepto" replace />} />
-      </Routes>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/onboarding/concepto" element={<ConceptPage />} />
+          <Route path="/onboarding/cuentas" element={<Push><OnboardingAccountsPage /></Push>} />
+          <Route path="/onboarding/primera-tarjeta" element={<Push><FirstCardPage /></Push>} />
+          <Route path="/onboarding/ingreso" element={<Push><OnboardingIncomePage /></Push>} />
+          <Route path="*" element={<Navigate to="/onboarding/concepto" replace />} />
+        </Routes>
+      </AnimatePresence>
     );
   }
 
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/flujo" element={<FlowPage />} />
-        <Route path="/presupuesto" element={<BudgetPage />} />
-        <Route path="/tarjetas" element={<CardsListPage />} />
-        <Route path="/ajustes" element={<SettingsPage />} />
-      </Route>
+    <AnimatePresence mode="popLayout" initial={false}>
+      <Routes location={location} key={location.pathname}>
+        <Route element={<AppShell />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/flujo" element={<FlowPage />} />
+          <Route path="/presupuesto" element={<BudgetPage />} />
+          <Route path="/tarjetas" element={<CardsListPage />} />
+          <Route path="/ajustes" element={<SettingsPage />} />
+        </Route>
 
-      <Route path="/tarjetas/nueva" element={<CardFormPage />} />
-      <Route path="/tarjetas/:cardId/editar" element={<CardFormPage />} />
-      <Route path="/tarjetas/:cardId" element={<CardDetailPage />} />
-      <Route path="/tarjetas/:cardId/pagar" element={<RegisterPaymentPage />} />
-      <Route path="/tarjetas/:cardId/apartar" element={<AllocatePage />} />
+        <Route path="/tarjetas/nueva" element={<Sheet><CardFormPage /></Sheet>} />
+        <Route path="/tarjetas/:cardId/editar" element={<Sheet><CardFormPage /></Sheet>} />
+        <Route path="/tarjetas/:cardId" element={<Push><CardDetailPage /></Push>} />
+        <Route path="/tarjetas/:cardId/pagar" element={<Sheet><RegisterPaymentPage /></Sheet>} />
+        <Route path="/tarjetas/:cardId/apartar" element={<Sheet><AllocatePage /></Sheet>} />
 
-      <Route path="/ajustes/categorias" element={<CategoriesPage />} />
-      <Route path="/ajustes/cuentas/nueva" element={<AccountFormPage />} />
-      <Route path="/ajustes/cuentas/:accountId" element={<AccountFormPage />} />
-      <Route path="/ajustes/ingresos/nuevo" element={<IncomeFormPage />} />
-      <Route path="/ajustes/ingresos/:incomeId" element={<IncomeFormPage />} />
-      <Route path="/ajustes/gastos-fijos/nuevo" element={<FixedExpenseFormPage />} />
-      <Route path="/ajustes/gastos-fijos/:fixedExpenseId" element={<FixedExpenseFormPage />} />
-      <Route path="/ajustes/historial-gastos" element={<TransactionHistoryPage />} />
-      <Route path="/ajustes/historial-ingresos" element={<IncomeHistoryPage />} />
+        <Route path="/ajustes/categorias" element={<Push><CategoriesPage /></Push>} />
+        <Route path="/ajustes/cuentas/nueva" element={<Sheet><AccountFormPage /></Sheet>} />
+        <Route path="/ajustes/cuentas/:accountId" element={<Sheet><AccountFormPage /></Sheet>} />
+        <Route path="/ajustes/ingresos/nuevo" element={<Sheet><IncomeFormPage /></Sheet>} />
+        <Route path="/ajustes/ingresos/:incomeId" element={<Sheet><IncomeFormPage /></Sheet>} />
+        <Route path="/ajustes/gastos-fijos/nuevo" element={<Sheet><FixedExpenseFormPage /></Sheet>} />
+        <Route path="/ajustes/gastos-fijos/:fixedExpenseId" element={<Sheet><FixedExpenseFormPage /></Sheet>} />
+        <Route path="/ajustes/historial-gastos" element={<Push><TransactionHistoryPage /></Push>} />
+        <Route path="/ajustes/historial-ingresos" element={<Push><IncomeHistoryPage /></Push>} />
 
-      <Route path="/gastos/nuevo" element={<AddExpensePage />} />
+        <Route path="/gastos/nuevo" element={<Sheet><AddExpensePage /></Sheet>} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
   );
 }
