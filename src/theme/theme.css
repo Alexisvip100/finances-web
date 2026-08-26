@@ -1,0 +1,70 @@
+:root {
+  --color-background: #0e0f13;
+  --color-surface: #191b21;
+  --color-surface-alt: #2a2d35;
+  --color-accent: #c6f24e;
+  --color-accent-muted: rgba(198, 242, 78, 0.14);
+  --color-warning: #f2b84e;
+  --color-warning-muted: rgba(242, 184, 78, 0.14);
+  --color-danger: #f2565b;
+  --color-danger-muted: rgba(242, 86, 91, 0.14);
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8b8f9a;
+  --color-text-muted: #5c606b;
+  --color-divider: #262931;
+  --color-overlay: rgba(6, 7, 9, 0.75);
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 12px;
+  --spacing-lg: 16px;
+  --spacing-xl: 20px;
+  --spacing-xxl: 24px;
+  --spacing-xxxl: 32px;
+
+  --radius-input: 16px;
+  --radius-card: 20px;
+  --radius-pill: 999px;
+
+  --font-xs: 11px;
+  --font-sm: 13px;
+  --font-md: 15px;
+  --font-lg: 17px;
+  --font-xl: 20px;
+  --font-xxl: 24px;
+  --font-amount-sm: 28px;
+  --font-amount-md: 36px;
+  --font-amount-lg: 48px;
+
+  --letter-spacing-label: 0.8px;
+
+  /* Ancho a partir del cual el shell cambia de tab bar (móvil) a sidebar (escritorio). */
+  --breakpoint-desktop: 900px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
