@@ -4,6 +4,7 @@ import { PageShell } from '../../components/PageShell';
 import { Card } from '../../components/Card';
 import { Pressable } from '../../components/Pressable';
 import { Icon } from '../../components/Icon';
+import { AddExpenseButton } from '../../components/AddExpenseButton';
 import { MetricCard } from '../../components/cards/MetricCard';
 import { ProgressBar } from '../../components/cards/ProgressBar';
 import { EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
@@ -48,7 +49,10 @@ export default function CardsListPage() {
 
   return (
     <PageShell contentStyle={{ paddingBottom: 140 }}>
-      <p style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, marginBottom: spacing.lg, marginTop: 0 }}>Tarjetas</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
+        <p style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, margin: 0 }}>Tarjetas</p>
+        <AddExpenseButton />
+      </div>
 
       {error ? <ErrorBanner message={error} onRetry={() => dispatch(fetchCardsThunk())} /> : null}
 

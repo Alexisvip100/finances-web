@@ -3,6 +3,7 @@ import { PageShell } from '../../components/PageShell';
 import { ProgressBar } from '../../components/cards/ProgressBar';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
 import { Icon } from '../../components/Icon';
+import { AddExpenseButton } from '../../components/AddExpenseButton';
 import { Pressable } from '../../components/Pressable';
 import { colors, categoryIcons, fontSize, radius, spacing } from '../../theme/theme';
 import { useAppDispatch, useAppSelector } from '../../store';
@@ -141,7 +142,10 @@ export default function BudgetPage() {
 
   return (
     <PageShell>
-      <h1 style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, marginBottom: spacing.lg }}>Presupuesto</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
+        <h1 style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, margin: 0 }}>Presupuesto</h1>
+        <AddExpenseButton />
+      </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: spacing.xl, marginBottom: spacing.xl }}>
         <Pressable onClick={() => changeMonth(-1)} style={{ width: 32, height: 32, borderRadius: 16, background: colors.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

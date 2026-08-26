@@ -53,14 +53,3 @@ textarea {
   }
 }
 
-/* Botón flotante (ej. "+" en Inicio): en móvil hay que despejar la tab bar
-   fija de 76px de abajo; en escritorio no existe esa barra. */
-.fab {
-  position: fixed;
-  bottom: calc(76px + 16px + env(safe-area-inset-bottom, 0px));
-}
-@media (min-width: 900px) {
-  .fab {
-    bottom: calc(24px + env(safe-area-inset-bottom, 0px));
-  }
-}

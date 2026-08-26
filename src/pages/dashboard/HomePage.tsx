@@ -5,7 +5,7 @@ import { Card } from '../../components/Card';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
 import { Skeleton, SkeletonRow } from '../../components/Skeleton';
 import { ProgressBar } from '../../components/cards/ProgressBar';
-import { Icon } from '../../components/Icon';
+import { AddExpenseButton } from '../../components/AddExpenseButton';
 import { Pressable } from '../../components/Pressable';
 import { colors, fontSize, radius, spacing, categoryIcons } from '../../theme/theme';
 import { useAppDispatch, useAppSelector } from '../../store';
@@ -74,30 +74,10 @@ export default function HomePage() {
   const budgetPercent = budgetTotals && budgetTotals.limit > 0 ? Math.round((budgetTotals.spent / budgetTotals.limit) * 100) : null;
 
   return (
-    <PageShell
-      floating={
-        <Pressable
-          onClick={() => navigate('/gastos/nuevo')}
-          scaleTo={0.88}
-          className="fab"
-          style={{
-            right: spacing.lg,
-            width: 58,
-            height: 58,
-            borderRadius: 29,
-            background: colors.accent,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: `0 6px 12px ${colors.accent}66`,
-          }}
-        >
-          <Icon name="add" size={28} color={colors.black} />
-        </Pressable>
-      }
-    >
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: spacing.lg }}>
+    <PageShell>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
         <span style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800 }}>Ciclos</span>
+        <AddExpenseButton />
       </div>
 
       <p style={{ color: colors.textMuted, fontSize: fontSize.sm, margin: 0 }}>Hoy</p>

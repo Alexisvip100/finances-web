@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { PageShell } from '../../components/PageShell';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
 import { Skeleton, SkeletonRow } from '../../components/Skeleton';
+import { AddExpenseButton } from '../../components/AddExpenseButton';
 import { Pressable } from '../../components/Pressable';
 import { colors, fontSize, radius, spacing } from '../../theme/theme';
 import { useAppDispatch, useAppSelector } from '../../store';
@@ -37,7 +38,10 @@ export default function FlowPage() {
 
   return (
     <PageShell>
-      <h1 style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, marginBottom: spacing.lg }}>Flujo</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.lg }}>
+        <h1 style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, margin: 0 }}>Flujo</h1>
+        <AddExpenseButton />
+      </div>
 
       {error ? <ErrorBanner message={error} onRetry={() => dispatch(fetchFlowThunk(days))} /> : null}
 
