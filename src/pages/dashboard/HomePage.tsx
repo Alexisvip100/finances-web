@@ -76,10 +76,9 @@ export default function HomePage() {
         <Pressable
           onClick={() => navigate('/gastos/nuevo')}
           scaleTo={0.88}
+          className="fab"
           style={{
-            position: 'fixed',
             right: spacing.lg,
-            bottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
             width: 58,
             height: 58,
             borderRadius: 29,
