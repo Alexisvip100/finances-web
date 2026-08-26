@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { PageShell } from '../../components/PageShell';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
+import { Skeleton, SkeletonRow } from '../../components/Skeleton';
 import { Pressable } from '../../components/Pressable';
 import { colors, fontSize, radius, spacing } from '../../theme/theme';
 import { useAppDispatch, useAppSelector } from '../../store';
@@ -27,6 +28,7 @@ function colorForEvent(event: { kind: string; amount: string | null }): string {
 export default function FlowPage() {
   const dispatch = useAppDispatch();
   const { data, days, status, error } = useAppSelector((s) => s.flow);
+  const loading = status === 'loading' && !data;
 
   useEffect(() => {
     dispatch(fetchFlowThunk(days));
@@ -52,19 +54,34 @@ export default function FlowPage() {
         }}
       >
         <span style={{ color: colors.textSecondary, fontSize: fontSize.sm, textAlign: 'center' }}>Disponible Real a Fin de Mes</span>
-        <span
-          style={{
-            color: data && Number(data.ending_balance) < 0 ? colors.danger : colors.accent,
-            fontSize: fontSize.amountLg,
-            fontWeight: 800,
-          }}
-        >
-          {data ? formatMoney(data.ending_balance) : '—'}
-        </span>
+        {loading ? (
+          <Skeleton width={180} height={fontSize.amountLg} />
+        ) : (
+          <span
+            style={{
+              color: data && Number(data.ending_balance) < 0 ? colors.danger : colors.accent,
+              fontSize: fontSize.amountLg,
+              fontWeight: 800,
+            }}
+          >
+            {data ? formatMoney(data.ending_balance) : '—'}
+          </span>
+        )}
         {data?.deficit_risk ? <Badge label="Riesgo de déficit proyectado" tone="danger" /> : null}
       </div>
 
-      <div style={{ display: 'flex', background: colors.surface, borderRadius: radius.pill, padding: 4, marginBottom: spacing.md }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          background: colors.surface,
+          borderRadius: radius.pill,
+          padding: 4,
+          marginBottom: spacing.md,
+          width: 'fit-content',
+          margin: `0 auto ${spacing.md}px`,
+        }}
+      >
         {DAY_OPTIONS.map((d) => {
           const active = days === d;
           return (
@@ -72,8 +89,7 @@ export default function FlowPage() {
               key={d}
               onClick={() => dispatch(fetchFlowThunk(d))}
               style={{
-                flex: 1,
-                padding: `${spacing.md}px 0`,
+                padding: `${spacing.sm}px ${spacing.lg}px`,
                 borderRadius: radius.pill,
                 background: active ? colors.textPrimary : 'transparent',
                 color: active ? colors.black : colors.textSecondary,
@@ -93,7 +109,13 @@ export default function FlowPage() {
         </p>
       ) : null}
 
-      {status === 'loading' && !data ? null : !data || data.weeks.every((w) => w.events.length === 0) ? (
+      {loading ? (
+        <>
+          <SkeletonRow style={{ marginLeft: 44 }} />
+          <SkeletonRow style={{ marginLeft: 44 }} />
+          <SkeletonRow style={{ marginLeft: 44 }} />
+        </>
+      ) : !data || data.weeks.every((w) => w.events.length === 0) ? (
         <EmptyState icon="trending-up-outline" title="Sin movimientos proyectados" description="Cuando tengas tarjetas, ingresos o gastos fijos, aquí verás tu línea de tiempo." />
       ) : (
         <div style={{ position: 'relative' }}>

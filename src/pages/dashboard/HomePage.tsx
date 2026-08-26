@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageShell } from '../../components/PageShell';
 import { Card } from '../../components/Card';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
+import { Skeleton, SkeletonRow } from '../../components/Skeleton';
 import { ProgressBar } from '../../components/cards/ProgressBar';
 import { Icon } from '../../components/Icon';
 import { Pressable } from '../../components/Pressable';
@@ -57,6 +58,8 @@ export default function HomePage() {
   }, []);
 
   const data = dashboard.data;
+  const loadingDashboard = dashboard.status === 'loading' && !data;
+  const loadingBudget = budget.status === 'loading' && !budget.data;
 
   const budgetTotals = budget.data?.categories.reduce(
     (acc, c) => {
@@ -106,10 +109,20 @@ export default function HomePage() {
 
       <Card style={{ marginBottom: spacing.xl }}>
         <p style={{ color: colors.textSecondary, fontSize: fontSize.sm, marginBottom: spacing.sm }}>Disponible real</p>
-        <p style={{ color: colors.accent, fontSize: fontSize.amountLg, fontWeight: 800, marginBottom: spacing.lg }}>
-          {data ? formatMoney(data.available) : '—'}
-        </p>
-        {data ? (
+        {loadingDashboard ? (
+          <Skeleton width={180} height={fontSize.amountLg} style={{ marginBottom: spacing.lg }} />
+        ) : (
+          <p style={{ color: colors.accent, fontSize: fontSize.amountLg, fontWeight: 800, marginBottom: spacing.lg }}>
+            {data ? formatMoney(data.available) : '—'}
+          </p>
+        )}
+        {loadingDashboard ? (
+          <div style={{ borderTop: `1px solid ${colors.divider}`, paddingTop: spacing.lg, display: 'flex', flexDirection: 'column', gap: spacing.lg }}>
+            <Skeleton width="90%" height={15} />
+            <Skeleton width="80%" height={15} />
+            <Skeleton width="85%" height={15} />
+          </div>
+        ) : data ? (
           <div style={{ borderTop: `1px solid ${colors.divider}`, paddingTop: spacing.sm }}>
             <BreakdownRow label="En cuentas" value={formatMoney(data.accounts_total)} />
             <BreakdownRow label="Comprometido" value={`-${formatMoney(data.committed)}`} color={colors.warning} />
@@ -125,7 +138,12 @@ export default function HomePage() {
         </Pressable>
       </div>
 
-      {!data || data.upcoming_outflows.length === 0 ? (
+      {loadingDashboard ? (
+        <>
+          <SkeletonRow />
+          <SkeletonRow />
+        </>
+      ) : !data || data.upcoming_outflows.length === 0 ? (
         <EmptyState icon="calendar-outline" title="Sin salidas próximas" description="Cuando registres tarjetas o gastos fijos, aquí verás lo que se acerca." />
       ) : (
         data.upcoming_outflows.slice(0, 4).map((o, idx) => (
@@ -152,7 +170,9 @@ export default function HomePage() {
         </Pressable>
       </div>
 
-      {!data || data.cards.length === 0 ? (
+      {loadingDashboard ? (
+        <SkeletonRow />
+      ) : !data || data.cards.length === 0 ? (
         <EmptyState
           icon="card-outline"
           title="Sin tarjetas"
@@ -178,7 +198,15 @@ export default function HomePage() {
         })
       )}
 
-      {budgetPercent !== null ? (
+      {loadingBudget ? (
+        <Card style={{ marginTop: spacing.sm }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
+            <Skeleton width={140} height={16} />
+            <Skeleton width={80} height={20} radius={radius.pill} />
+          </div>
+          <Skeleton width="100%" height={8} radius={8} />
+        </Card>
+      ) : budgetPercent !== null ? (
         <Card style={{ marginTop: spacing.sm }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md }}>
             <span style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800 }}>PRESUPUESTO MES</span>

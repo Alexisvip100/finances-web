@@ -39,6 +39,20 @@ textarea {
   }
 }
 
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface-alt) 25%, var(--color-divider) 50%, var(--color-surface-alt) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 /* Botón flotante (ej. "+" en Inicio): en móvil hay que despejar la tab bar
    fija de 76px de abajo; en escritorio no existe esa barra. */
 .fab {
