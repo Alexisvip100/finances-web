@@ -7,6 +7,7 @@ import { AddExpenseButton } from '../../components/AddExpenseButton';
 import { DangerButton } from '../../components/Buttons';
 import { ErrorBanner } from '../../components/Misc';
 import { colors, fontSize, radius, spacing } from '../../theme/theme';
+import { ThemeMode, useThemeMode } from '../../theme/ThemeModeContext';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { fetchAccountsThunk } from '../../store/slices/accountsSlice';
 import { fetchCardsThunk } from '../../store/slices/cardsSlice';
@@ -26,6 +27,7 @@ export default function SettingsPage() {
   const fixedExpenses = useAppSelector((s) => s.fixedExpenses);
   const categories = useAppSelector((s) => s.categories);
   const user = useAppSelector((s) => s.auth.user);
+  const { mode, setMode } = useThemeMode();
 
   useEffect(() => {
     dispatch(fetchAccountsThunk());
@@ -45,6 +47,43 @@ export default function SettingsPage() {
       {user ? <p style={{ color: colors.textMuted, fontSize: fontSize.sm, marginBottom: spacing.xl }}>{user.email}</p> : null}
 
       {accounts.error ? <ErrorBanner message={accounts.error} /> : null}
+
+      <SectionLabel label="Apariencia" />
+      <div
+        style={{
+          display: 'flex',
+          background: colors.surface,
+          borderRadius: radius.pill,
+          padding: 4,
+          marginBottom: spacing.xl,
+        }}
+      >
+        {THEME_OPTIONS.map((opt) => {
+          const active = mode === opt.value;
+          return (
+            <Pressable
+              key={opt.value}
+              onClick={() => setMode(opt.value)}
+              style={{
+                flex: 1,
+                padding: `${spacing.sm}px 0`,
+                borderRadius: radius.pill,
+                background: active ? colors.accent : 'transparent',
+                color: active ? colors.black : colors.textSecondary,
+                fontWeight: 700,
+                fontSize: fontSize.sm,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+              }}
+            >
+              <Icon name={opt.icon} size={15} color={active ? colors.black : colors.textSecondary} />
+              {opt.label}
+            </Pressable>
+          );
+        })}
+      </div>
 
       <SectionLabel label="Cuentas" />
       <div style={{ background: colors.surface, borderRadius: radius.card, paddingLeft: spacing.lg, paddingRight: spacing.lg }}>
@@ -120,6 +159,12 @@ export default function SettingsPage() {
     </PageShell>
   );
 }
+
+const THEME_OPTIONS: { value: ThemeMode; label: string; icon: string }[] = [
+  { value: 'system', label: 'Automático', icon: 'phone-portrait-outline' },
+  { value: 'light', label: 'Claro', icon: 'sunny-outline' },
+  { value: 'dark', label: 'Oscuro', icon: 'moon-outline' },
+];
 
 function SectionLabel({ label }: { label: string }) {
   return (

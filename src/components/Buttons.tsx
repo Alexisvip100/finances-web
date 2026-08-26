@@ -72,7 +72,7 @@ export function Spinner({ color = colors.accent, size = 16 }: { color?: string; 
         display: 'inline-block',
         width: size,
         height: size,
-        border: `2px solid ${color}33`,
+        border: `2px solid ${colors.divider}`,
         borderTopColor: color,
         borderRadius: '50%',
         animation: 'spin 0.7s linear infinite',

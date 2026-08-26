@@ -44,6 +44,45 @@
   --breakpoint-desktop: 900px;
 }
 
+/* Oscuro es la base (:root de arriba). Modo "Automático": si el sistema
+   prefiere claro y el usuario no forzó oscuro a mano, se usan estos valores. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --color-background: #f5f6f8;
+    --color-surface: #ffffff;
+    --color-surface-alt: #eef0f3;
+    --color-accent: #5c8a00;
+    --color-accent-muted: rgba(92, 138, 0, 0.12);
+    --color-warning: #a6690a;
+    --color-warning-muted: rgba(166, 105, 10, 0.12);
+    --color-danger: #d63a41;
+    --color-danger-muted: rgba(214, 58, 65, 0.12);
+    --color-text-primary: #14161a;
+    --color-text-secondary: #5c606b;
+    --color-text-muted: #8b8f9a;
+    --color-divider: #e2e4e8;
+    --color-overlay: rgba(20, 22, 26, 0.5);
+  }
+}
+
+/* Claro forzado a mano, sin importar lo que prefiera el sistema. */
+:root[data-theme='light'] {
+  --color-background: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-alt: #eef0f3;
+  --color-accent: #5c8a00;
+  --color-accent-muted: rgba(92, 138, 0, 0.12);
+  --color-warning: #a6690a;
+  --color-warning-muted: rgba(166, 105, 10, 0.12);
+  --color-danger: #d63a41;
+  --color-danger-muted: rgba(214, 58, 65, 0.12);
+  --color-text-primary: #14161a;
+  --color-text-secondary: #5c606b;
+  --color-text-muted: #8b8f9a;
+  --color-divider: #e2e4e8;
+  --color-overlay: rgba(20, 22, 26, 0.5);
+}
+
 * {
   box-sizing: border-box;
 }

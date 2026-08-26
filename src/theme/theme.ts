@@ -1,20 +1,25 @@
-// Mismos valores que frontend-movile/src/theme/theme.ts (fuente de verdad) —
-// espejeados aquí para la lógica en TS; el CSS usa las custom properties de theme.css.
+// A diferencia de frontend-movile (móvil, sin dark/light switch), aquí cada
+// color apunta a una custom property de theme.css en vez de un hex fijo —
+// así todo lo que ya usa `colors.x` en un inline style se actualiza solo al
+// cambiar de tema, sin tocar los ~30 archivos que lo importan. Los valores
+// reales (oscuro/claro) viven en theme.css, no aquí.
 export const colors = {
-  background: '#0E0F13',
-  surface: '#191B21',
-  surfaceAlt: '#2A2D35',
-  accent: '#C6F24E',
-  accentMuted: 'rgba(198, 242, 78, 0.14)',
-  warning: '#F2B84E',
-  warningMuted: 'rgba(242, 184, 78, 0.14)',
-  danger: '#F2565B',
-  dangerMuted: 'rgba(242, 86, 91, 0.14)',
-  textPrimary: '#FFFFFF',
-  textSecondary: '#8B8F9A',
-  textMuted: '#5C606B',
-  divider: '#262931',
-  overlay: 'rgba(6, 7, 9, 0.75)',
+  background: 'var(--color-background)',
+  surface: 'var(--color-surface)',
+  surfaceAlt: 'var(--color-surface-alt)',
+  accent: 'var(--color-accent)',
+  accentMuted: 'var(--color-accent-muted)',
+  warning: 'var(--color-warning)',
+  warningMuted: 'var(--color-warning-muted)',
+  danger: 'var(--color-danger)',
+  dangerMuted: 'var(--color-danger-muted)',
+  textPrimary: 'var(--color-text-primary)',
+  textSecondary: 'var(--color-text-secondary)',
+  textMuted: 'var(--color-text-muted)',
+  divider: 'var(--color-divider)',
+  overlay: 'var(--color-overlay)',
+  // Fijos a propósito en ambos temas (ej. texto negro sobre el botón accent,
+  // que siempre debe leerse bien sin importar el tema activo).
   white: '#FFFFFF',
   black: '#000000',
 };

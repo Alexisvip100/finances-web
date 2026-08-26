@@ -35,7 +35,7 @@ function LoadingScreen() {
         style={{
           width: 32,
           height: 32,
-          border: `3px solid ${colors.accent}33`,
+          border: `3px solid ${colors.divider}`,
           borderTopColor: colors.accent,
           borderRadius: '50%',
           animation: 'spin 0.7s linear infinite',
