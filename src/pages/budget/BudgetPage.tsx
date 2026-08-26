@@ -17,7 +17,29 @@ const DONUT_COLORS = [colors.accent, '#8B8F9A', '#F2565B', '#4E8DF2', '#F2B84E',
 const DONUT_SIZE = 220;
 const DONUT_STROKE = 20;
 
-function Donut({ segments }: { segments: { color: string; fraction: number }[] }) {
+// Anima de 0 -> target cada vez que target cambia (entrar a la tab, cambiar
+// de mes, etc.) — usado tanto para el número "TOTAL GASTADO" como para que
+// los arcos de la dona crezcan en sincronía con el conteo.
+function useCountUp(target: number, duration = 900) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    let raf: number;
+    const start = performance.now();
+    const animate = (now: number) => {
+      const t = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      setValue(target * eased);
+      if (t < 1) raf = requestAnimationFrame(animate);
+    };
+    raf = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration]);
+
+  return value;
+}
+
+function Donut({ segments, progress = 1 }: { segments: { color: string; fraction: number }[]; progress?: number }) {
   const size = DONUT_SIZE;
   const strokeWidth = DONUT_STROKE;
   const radiusPx = (size - strokeWidth) / 2;
@@ -28,9 +50,10 @@ function Donut({ segments }: { segments: { color: string; fraction: number }[] }
     <svg width={size} height={size}>
       <circle cx={size / 2} cy={size / 2} r={radiusPx} stroke={colors.surfaceAlt} strokeWidth={strokeWidth} fill="none" />
       {segments.map((s, idx) => {
-        const dash = circumference * s.fraction;
+        const fraction = s.fraction * progress;
+        const dash = circumference * fraction;
         const offset = circumference * (1 - cumulative);
-        cumulative += s.fraction;
+        cumulative += fraction;
         return (
           <circle
             key={idx}
@@ -133,6 +156,8 @@ export default function BudgetPage() {
   };
 
   const totalSpent = data ? Number(data.total_spent) : 0;
+  const animatedTotalSpent = useCountUp(totalSpent);
+  const donutProgress = totalSpent > 0 ? Math.min(1, animatedTotalSpent / totalSpent) : 1;
   const segments = useMemo(() => {
     if (!data || totalSpent === 0) return [];
     return data.categories
@@ -225,10 +250,12 @@ export default function BudgetPage() {
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: spacing.xl }}>
-            <Donut segments={segments} />
+            <Donut segments={segments} progress={donutProgress} />
             <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: DONUT_SIZE - DONUT_STROKE * 2 - 24 }}>
               <span style={{ color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5 }}>TOTAL GASTADO</span>
-              <span style={{ color: colors.textPrimary, fontSize: fontSize.xl, fontWeight: 800, marginTop: 4, textAlign: 'center' }}>{formatMoney(totalSpent)}</span>
+              <span style={{ color: colors.textPrimary, fontSize: fontSize.xl, fontWeight: 800, marginTop: 4, textAlign: 'center' }}>
+                {formatMoney(animatedTotalSpent)}
+              </span>
             </div>
           </div>
 

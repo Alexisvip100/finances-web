@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageShell } from '../../components/PageShell';
 import { Pressable } from '../../components/Pressable';
 import { Icon } from '../../components/Icon';
+import { AddExpenseButton } from '../../components/AddExpenseButton';
 import { DangerButton } from '../../components/Buttons';
 import { ErrorBanner } from '../../components/Misc';
 import { colors, fontSize, radius, spacing } from '../../theme/theme';
@@ -37,7 +38,10 @@ export default function SettingsPage() {
 
   return (
     <PageShell contentStyle={{ paddingBottom: 140 }}>
-      <h1 style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, marginBottom: spacing.xs }}>Ajustes</h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs }}>
+        <h1 style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, margin: 0 }}>Ajustes</h1>
+        <AddExpenseButton />
+      </div>
       {user ? <p style={{ color: colors.textMuted, fontSize: fontSize.sm, marginBottom: spacing.xl }}>{user.email}</p> : null}
 
       {accounts.error ? <ErrorBanner message={accounts.error} /> : null}
