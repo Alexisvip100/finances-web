@@ -2,13 +2,19 @@
   --color-background: #0e0f13;
   --color-surface: #191b21;
   --color-surface-alt: #2a2d35;
-  --color-accent: #c6f24e;
-  --color-accent-muted: rgba(198, 242, 78, 0.14);
+  /* Antes #c6f24e — un lima casi neón que sobre negro casi puro se siente
+     agresivo a la vista. Este verde es más suave/desaturado, sigue leyéndose
+     como "verde de marca" pero sin el efecto neón. */
+  --color-accent: #a6d65c;
+  --color-accent-muted: rgba(166, 214, 92, 0.14);
   --color-warning: #f2b84e;
   --color-warning-muted: rgba(242, 184, 78, 0.14);
   --color-danger: #f2565b;
   --color-danger-muted: rgba(242, 86, 91, 0.14);
-  --color-text-primary: #ffffff;
+  /* Blanco puro sobre el fondo casi negro también cansa la vista en bloques
+     de texto grandes — un off-white se siente igual de "blanco" pero suaviza
+     el contraste extremo. */
+  --color-text-primary: #f2f3f5;
   --color-text-secondary: #8b8f9a;
   --color-text-muted: #5c606b;
   --color-divider: #262931;
@@ -51,8 +57,8 @@
     --color-background: #f5f6f8;
     --color-surface: #ffffff;
     --color-surface-alt: #eef0f3;
-    --color-accent: #5c8a00;
-    --color-accent-muted: rgba(92, 138, 0, 0.12);
+    --color-accent: #6b9b1e;
+    --color-accent-muted: rgba(107, 155, 30, 0.1);
     --color-warning: #a6690a;
     --color-warning-muted: rgba(166, 105, 10, 0.12);
     --color-danger: #d63a41;
@@ -70,8 +76,8 @@
   --color-background: #f5f6f8;
   --color-surface: #ffffff;
   --color-surface-alt: #eef0f3;
-  --color-accent: #5c8a00;
-  --color-accent-muted: rgba(92, 138, 0, 0.12);
+  --color-accent: #6b9b1e;
+  --color-accent-muted: rgba(107, 155, 30, 0.1);
   --color-warning: #a6690a;
   --color-warning-muted: rgba(166, 105, 10, 0.12);
   --color-danger: #d63a41;
