@@ -13,6 +13,10 @@ dist-ssr
 *.local
 .env
 
+# Se regenera en cada "npm run dev"/"npm run build" (ver scripts/write-version.mjs)
+public/version.json
+src/notifications/version.generated.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

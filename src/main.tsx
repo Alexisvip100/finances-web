@@ -7,6 +7,7 @@ import './theme/daypicker.css'
 import App from './App.tsx'
 import { store } from './store'
 import { applyThemeMode, getStoredMode, ThemeModeProvider } from './theme/ThemeModeContext'
+import { NotificationHost } from './notifications/NotificationHost'
 
 // Antes de montar React, para que no haya un parpadeo del tema por defecto
 // (oscuro) mientras carga el primer render.
@@ -18,6 +19,7 @@ createRoot(document.getElementById('root')!).render(
       <Provider store={store}>
         <BrowserRouter>
           <App />
+          <NotificationHost />
         </BrowserRouter>
       </Provider>
     </ThemeModeProvider>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageShell } from '../../components/PageShell';
 import { Card } from '../../components/Card';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
+import { Icon } from '../../components/Icon';
 import { Skeleton, SkeletonRow } from '../../components/Skeleton';
 import { ProgressBar } from '../../components/cards/ProgressBar';
 import { AddExpenseButton } from '../../components/AddExpenseButton';
@@ -22,17 +23,33 @@ function iconForKind(kind: string): string {
   return 'file-tray-outline';
 }
 
-function BreakdownRow({ label, value, color, last }: { label: string; value: string; color?: string; last?: boolean }) {
+function BreakdownRow({
+  label,
+  value,
+  color,
+  icon,
+  last,
+}: {
+  label: string;
+  value: string;
+  color?: string;
+  icon: string;
+  last?: boolean;
+}) {
   return (
     <div
       style={{
         display: 'flex',
+        alignItems: 'center',
         justifyContent: 'space-between',
         padding: `${spacing.md}px 0`,
         borderBottom: last ? 'none' : `1px solid ${colors.divider}`,
       }}
     >
-      <span style={{ color: colors.textSecondary, fontSize: fontSize.md }}>{label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+        <IconCircle name={icon} bg={colors.surfaceAlt} color={color ?? colors.textSecondary} size={28} />
+        <span style={{ color: colors.textSecondary, fontSize: fontSize.md }}>{label}</span>
+      </div>
       <span style={{ color: color ?? colors.textPrimary, fontSize: fontSize.md, fontWeight: 700 }}>{value}</span>
     </div>
   );
@@ -88,7 +105,10 @@ export default function HomePage() {
       {dashboard.error ? <ErrorBanner message={dashboard.error} onRetry={refresh} /> : null}
 
       <Card style={{ marginBottom: spacing.xl }}>
-        <p style={{ color: colors.textSecondary, fontSize: fontSize.sm, marginBottom: spacing.sm }}>Disponible real</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm }}>
+          <Icon name="wallet-outline" size={14} color={colors.textSecondary} />
+          <p style={{ color: colors.textSecondary, fontSize: fontSize.sm, margin: 0 }}>Disponible real</p>
+        </div>
         {loadingDashboard ? (
           <Skeleton width={180} height={fontSize.amountLg} style={{ marginBottom: spacing.lg }} />
         ) : (
@@ -104,9 +124,15 @@ export default function HomePage() {
           </div>
         ) : data ? (
           <div style={{ borderTop: `1px solid ${colors.divider}`, paddingTop: spacing.sm }}>
-            <BreakdownRow label="En cuentas" value={formatMoney(data.accounts_total)} />
-            <BreakdownRow label="Comprometido" value={`-${formatMoney(data.committed)}`} color={colors.warning} />
-            <BreakdownRow label="Fijos pendientes" value={`-${formatMoney(data.pending_fixed)}`} color={colors.warning} last />
+            <BreakdownRow label="En cuentas" value={formatMoney(data.accounts_total)} icon="business-outline" />
+            <BreakdownRow label="Comprometido" value={`-${formatMoney(data.committed)}`} color={colors.warning} icon="trending-down-outline" />
+            <BreakdownRow
+              label="Fijos pendientes"
+              value={`-${formatMoney(data.pending_fixed)}`}
+              color={colors.warning}
+              icon="calendar-outline"
+              last
+            />
           </div>
         ) : null}
       </Card>

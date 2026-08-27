@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { PageShell } from '../../components/PageShell';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
-import { Skeleton, SkeletonRow } from '../../components/Skeleton';
+import { Skeleton, SkeletonCircle } from '../../components/Skeleton';
 import { AddExpenseButton } from '../../components/AddExpenseButton';
 import { Pressable } from '../../components/Pressable';
 import { colors, fontSize, radius, spacing } from '../../theme/theme';
@@ -59,7 +59,7 @@ export default function FlowPage() {
       >
         <span style={{ color: colors.textSecondary, fontSize: fontSize.sm, textAlign: 'center' }}>Disponible Real a Fin de Mes</span>
         {loading ? (
-          <Skeleton width={180} height={fontSize.amountLg} />
+          <Skeleton width={180} height={Math.round(fontSize.amountLg * 1.1)} />
         ) : (
           <span
             style={{
@@ -115,11 +115,42 @@ export default function FlowPage() {
       ) : null}
 
       {loading ? (
-        <>
-          <SkeletonRow style={{ marginLeft: 44 }} />
-          <SkeletonRow style={{ marginLeft: 44 }} />
-          <SkeletonRow style={{ marginLeft: 44 }} />
-        </>
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 15, top: 8, bottom: 8, width: 2, background: colors.divider }} />
+          {[0, 1].map((week) => (
+            <div key={week} style={{ marginBottom: spacing.xl }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md }}>
+                <SkeletonCircle size={32} />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <Skeleton width={90} height={15} />
+                  <Skeleton width={70} height={11} />
+                </div>
+              </div>
+              {[0, 1].map((row) => (
+                <div
+                  key={row}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: colors.surface,
+                    borderRadius: radius.card,
+                    padding: spacing.lg,
+                    marginLeft: 44,
+                    marginBottom: spacing.md,
+                    gap: spacing.md,
+                  }}
+                >
+                  <SkeletonCircle size={38} />
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <Skeleton width="55%" height={15} />
+                    <Skeleton width="35%" height={11} />
+                  </div>
+                  <Skeleton width={64} height={15} />
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       ) : !data || data.weeks.every((w) => w.events.length === 0) ? (
         <EmptyState icon="trending-up-outline" title="Sin movimientos proyectados" description="Cuando tengas tarjetas, ingresos o gastos fijos, aquí verás tu línea de tiempo." />
       ) : (
