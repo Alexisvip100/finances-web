@@ -15,7 +15,7 @@ export function ProgressBar({
   const clamped = Math.max(0, Math.min(100, percent));
   return (
     <div style={{ width: '100%', overflow: 'hidden', background: trackColor, height, borderRadius: height }}>
-      <div style={{ width: `${clamped}%`, background: color, height, borderRadius: height, transition: 'width 0.3s ease' }} />
+      <div style={{ width: `${clamped}%`, background: color, height, borderRadius: height, transition: 'width 0.3s ease, background-color 0.18s ease' }} />
     </div>
   );
 }

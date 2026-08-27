@@ -93,6 +93,24 @@
   box-sizing: border-box;
 }
 
+/* Al cambiar de tema (claro/oscuro/automático) los `--color-*` cambian de
+   valor de golpe — sin esto, todo lo que usa `colors.x` (prácticamente cada
+   componente) hace un corte seco de color. Con esto, cualquier elemento cuyo
+   color dependa de un `--color-*` hace un fundido corto en vez de saltar.
+   Nada más se anima `transform`/`opacity` — esos ya los maneja Framer Motion
+   por su cuenta (toasts, sheets, etc.) y no se quiere pisar esa animación. */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    fill 0.18s ease,
+    stroke 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
 html,
 body,
 #root {
