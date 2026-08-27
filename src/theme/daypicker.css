@@ -1,0 +1,38 @@
+@import 'react-day-picker/style.css';
+
+/* Reemplaza la paleta azul por defecto de react-day-picker por la del app —
+   mismos custom properties que ya define theme.css, así también respeta
+   claro/oscuro sin duplicar valores. */
+.ciclos-daypicker.rdp-root {
+  --rdp-accent-color: var(--color-accent);
+  --rdp-accent-background-color: var(--color-accent-muted);
+  --rdp-today-color: var(--color-accent);
+  --rdp-day-height: 40px;
+  --rdp-day-width: 40px;
+  --rdp-day_button-height: 38px;
+  --rdp-day_button-width: 38px;
+  color: var(--color-text-primary);
+  width: 100%;
+}
+.ciclos-daypicker .rdp-day_button:hover:not([disabled]) {
+  background: var(--color-surface);
+}
+.ciclos-daypicker .rdp-selected .rdp-day_button {
+  color: var(--color-black);
+  font-weight: 700;
+}
+.ciclos-daypicker .rdp-caption_label,
+.ciclos-daypicker .rdp-weekday {
+  color: var(--color-text-primary);
+}
+.ciclos-daypicker .rdp-weekday {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+.ciclos-daypicker .rdp-nav button {
+  color: var(--color-text-secondary);
+}
+.ciclos-daypicker .rdp-month_caption {
+  font-weight: 800;
+}

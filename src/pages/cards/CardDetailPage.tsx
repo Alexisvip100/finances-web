@@ -5,6 +5,7 @@ import { TopBar } from '../../components/TopBar';
 import { Card } from '../../components/Card';
 import { Pressable } from '../../components/Pressable';
 import { Icon } from '../../components/Icon';
+import { Portal } from '../../components/Portal';
 import { PrimaryButton, SecondaryButton } from '../../components/Buttons';
 import { ProgressBar } from '../../components/cards/ProgressBar';
 import { CycleRing } from '../../components/cards/CycleRing';
@@ -257,6 +258,7 @@ export default function CardDetailPage() {
       ) : null}
 
       {paidCycleModalOpen ? (
+        <Portal>
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
           <div onClick={() => setPaidCycleModalOpen(false)} style={{ position: 'absolute', inset: 0, background: colors.overlay }} />
           <div
@@ -301,9 +303,11 @@ export default function CardDetailPage() {
             )}
           </div>
         </div>
+        </Portal>
       ) : null}
 
       {currentCycleModalOpen ? (
+        <Portal>
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
           <div onClick={() => setCurrentCycleModalOpen(false)} style={{ position: 'absolute', inset: 0, background: colors.overlay }} />
           <div
@@ -346,6 +350,7 @@ export default function CardDetailPage() {
             )}
           </div>
         </div>
+        </Portal>
       ) : null}
     </PageShell>
   );

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageShell } from '../components/PageShell';
 import { Pressable } from '../components/Pressable';
 import { Icon } from '../components/Icon';
+import { Portal } from '../components/Portal';
 import { PrimaryButton, SecondaryButton } from '../components/Buttons';
 import { AmountInput } from '../components/AmountInput';
 import { ErrorBanner } from '../components/Misc';
@@ -14,7 +15,8 @@ import { fetchCardsThunk } from '../store/slices/cardsSlice';
 import { fetchCategoriesThunk, createCategoryThunk } from '../store/slices/categoriesSlice';
 import { createTransactionThunk } from '../store/slices/transactionsSlice';
 import { previewCycleBounds } from '../utils/cycleHelpers';
-import { formatShort, maskDateInput, parseISODate, todayISO, toISODate } from '../utils/dateHelpers';
+import { formatShort, parseISODate, todayISO, toISODate } from '../utils/dateHelpers';
+import { DateSheetPicker } from '../components/DateSheetPicker';
 import { accountLabel, cardLabel } from '../utils/labels';
 
 type MethodSelection = { kind: 'account'; id: number } | { kind: 'card'; id: number } | null;
@@ -54,7 +56,7 @@ export default function AddExpensePage() {
   const [isMsi, setIsMsi] = useState(false);
   const [months, setMonths] = useState('3');
   const [saving, setSaving] = useState(false);
-  const [editingDate, setEditingDate] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [customDate, setCustomDate] = useState(todayISO());
 
   useEffect(() => {
@@ -122,65 +124,20 @@ export default function AddExpensePage() {
         <div style={{ width: 32, height: 32 }} />
       </div>
 
-      {editingDate ? (
-        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, marginBottom: spacing.xl }}>
-          <input
-            value={customDate}
-            onChange={(e) => setCustomDate(maskDateInput(e.target.value))}
-            placeholder="2026-09-15"
-            inputMode="numeric"
-            maxLength={10}
-            autoFocus
-            style={{
-              background: colors.surface,
-              borderRadius: radius.pill,
-              padding: `${spacing.sm}px ${spacing.lg}px`,
-              color: colors.textPrimary,
-              fontSize: fontSize.sm,
-              fontWeight: 600,
-              minWidth: 120,
-              textAlign: 'center',
-            }}
-          />
-          <Pressable
-            onClick={() => {
-              setCustomDate(todayISO());
-              setEditingDate(false);
-            }}
-            style={{ background: colors.surfaceAlt, borderRadius: radius.pill, padding: `${spacing.sm}px ${spacing.md}px` }}
-          >
-            <span style={{ color: colors.textSecondary, fontSize: fontSize.xs, fontWeight: 700 }}>Hoy</span>
-          </Pressable>
-          <Pressable
-            onClick={() => setEditingDate(false)}
-            disabled={customDate.length !== 10}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              background: colors.accent,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: customDate.length !== 10 ? 0.4 : 1,
-            }}
-          >
-            <Icon name="checkmark" size={16} color={colors.black} />
-          </Pressable>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing.xl }}>
-          <Pressable
-            onClick={() => setEditingDate(true)}
-            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.surface, borderRadius: radius.pill, padding: `${spacing.sm}px ${spacing.lg}px` }}
-          >
-            <span style={{ color: colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600 }}>
-              {customDate === todayISO() ? 'Hoy' : formatShort(customDate)}
-            </span>
-            <Icon name="pencil" size={12} color={colors.textSecondary} style={{ marginLeft: spacing.sm }} />
-          </Pressable>
-        </div>
-      )}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: spacing.xl }}>
+        <Pressable
+          onClick={() => setDatePickerOpen(true)}
+          style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.surface, borderRadius: radius.pill, padding: `${spacing.sm}px ${spacing.lg}px` }}
+        >
+          <Icon name="calendar-outline" size={14} color={colors.textSecondary} style={{ marginRight: spacing.sm }} />
+          <span style={{ color: colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600 }}>
+            {customDate === todayISO() ? 'Hoy' : formatShort(customDate)}
+          </span>
+          <Icon name="chevron-down" size={12} color={colors.textSecondary} style={{ marginLeft: spacing.sm }} />
+        </Pressable>
+      </div>
+
+      <DateSheetPicker open={datePickerOpen} value={customDate} onClose={() => setDatePickerOpen(false)} onSelect={setCustomDate} />
 
       <AmountInput value={amount} onChangeText={setAmount} size="amountLg" autoFocus />
 
@@ -278,6 +235,7 @@ export default function AddExpensePage() {
       </Pressable>
 
       {categoryPickerOpen ? (
+        <Portal>
         <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
           <div onClick={() => setCategoryPickerOpen(false)} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)' }} />
           <div
@@ -337,6 +295,7 @@ export default function AddExpensePage() {
             </div>
           </div>
         </div>
+        </Portal>
       ) : null}
 
       {selectedCard ? (

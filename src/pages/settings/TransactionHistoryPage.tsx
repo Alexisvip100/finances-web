@@ -4,6 +4,7 @@ import { PageShell } from '../../components/PageShell';
 import { TopBar } from '../../components/TopBar';
 import { EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
 import { Icon } from '../../components/Icon';
+import { Portal } from '../../components/Portal';
 import { Pressable } from '../../components/Pressable';
 import { colors, categoryIcons, fontSize, radius, spacing } from '../../theme/theme';
 import { useAppDispatch, useAppSelector } from '../../store';
@@ -225,6 +226,7 @@ export default function TransactionHistoryPage() {
       </Pressable>
 
       {categoryPickerOpen ? (
+        <Portal>
         <>
           <div style={styles.modalBackdrop} onClick={() => setCategoryPickerOpen(false)} />
           <div style={styles.modalSheet}>
@@ -258,6 +260,7 @@ export default function TransactionHistoryPage() {
             </div>
           </div>
         </>
+        </Portal>
       ) : null}
 
       <p style={styles.filterLabel}>Método de pago</p>
