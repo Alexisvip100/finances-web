@@ -6,7 +6,12 @@ export const TOKEN_STORAGE_KEY = 'ciclos_access_token';
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  // El backend son funciones serverless en Vercel — si llevan un rato sin
+  // tráfico, la primera petición paga un "cold start" (levantar el proceso +
+  // abrir conexión a Supabase) que puede tardar varios segundos. 10s se
+  // quedaba corto justo en ese caso, que es común después de estar un rato
+  // sin usar la app.
+  timeout: 20000,
 });
 
 let cachedToken: string | null = null;
