@@ -17,7 +17,18 @@ import * as transactionsApi from '../../api/transactions';
 import * as fixedExpensesApi from '../../api/fixedExpenses';
 import { PaymentMethod, Transaction } from '../../types';
 import { formatMoney } from '../../utils/currency';
-import { formatShort, lastDayOfMonth, monthKeyLabel, shiftMonthKey, todayISO } from '../../utils/dateHelpers';
+import {
+  endOfWeek,
+  formatRangeShort,
+  formatShort,
+  formatWeekdayShort,
+  lastDayOfMonth,
+  monthKeyLabel,
+  shiftDate,
+  shiftMonthKey,
+  startOfWeek,
+  todayISO,
+} from '../../utils/dateHelpers';
 import { accountLabel, cardLabel } from '../../utils/labels';
 
 type SourceFilter = { kind: 'account' | 'card'; id: number } | null;
@@ -38,7 +49,9 @@ export default function TransactionHistoryPage() {
   const cards = useAppSelector((s) => s.cards.items);
   const fixedExpenses = useAppSelector((s) => s.fixedExpenses.items);
 
-  const [month, setMonth] = useState(todayISO().slice(0, 7));
+  const [granularity, setGranularity] = useState<'month' | 'week' | 'day'>('month');
+  const [anchorDate, setAnchorDate] = useState(todayISO());
+  const month = anchorDate.slice(0, 7);
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
   const [source, setSource] = useState<SourceFilter>(null);
@@ -54,16 +67,25 @@ export default function TransactionHistoryPage() {
     dispatch(fetchFixedExpensesThunk());
   }, [dispatch]);
 
+  // Independiente de qué tanto se esté viendo (día/semana/mes): el bloque de
+  // "gastos fijos de este mes" y su estado de pagado siempre son del mes
+  // calendario completo, no de la ventana que el usuario esté filtrando.
   const monthBounds = useCallback(() => {
     const [year, monthNum] = month.split('-').map(Number);
     const lastDay = lastDayOfMonth(year, monthNum);
     return { from_date: `${month}-01`, to_date: `${month}-${String(lastDay).padStart(2, '0')}` };
   }, [month]);
 
+  const periodBounds = useCallback(() => {
+    if (granularity === 'day') return { from_date: anchorDate, to_date: anchorDate };
+    if (granularity === 'week') return { from_date: startOfWeek(anchorDate), to_date: endOfWeek(anchorDate) };
+    return monthBounds();
+  }, [granularity, anchorDate, monthBounds]);
+
   const refresh = useCallback(() => {
     dispatch(
       fetchTransactionsThunk({
-        ...monthBounds(),
+        ...periodBounds(),
         category_id: categoryId ?? undefined,
         account_id: source?.kind === 'account' ? source.id : undefined,
         credit_card_id: source?.kind === 'card' ? source.id : undefined,
@@ -71,7 +93,7 @@ export default function TransactionHistoryPage() {
         only_fixed_expenses: onlyFixed || undefined,
       })
     );
-  }, [dispatch, monthBounds, categoryId, source, method, onlyFixed]);
+  }, [dispatch, periodBounds, categoryId, source, method, onlyFixed]);
 
   // Independiente de los demás filtros: para saber qué gastos fijos ya se
   // pagaron este mes sin que un filtro (categoría/cuenta/método) los oculte.
@@ -142,7 +164,16 @@ export default function TransactionHistoryPage() {
     return Object.entries(groups).sort((a, b) => (a[0] < b[0] ? 1 : -1));
   }, [items]);
 
-  const changeMonth = (delta: number) => setMonth((m) => shiftMonthKey(m, delta));
+  const changePeriod = (delta: number) => {
+    setAnchorDate((d) => {
+      if (granularity === 'day') return shiftDate(d, delta);
+      if (granularity === 'week') return shiftDate(d, delta * 7);
+      return `${shiftMonthKey(d.slice(0, 7), delta)}-01`;
+    });
+  };
+
+  const periodLabel =
+    granularity === 'day' ? formatWeekdayShort(anchorDate) : granularity === 'week' ? formatRangeShort(startOfWeek(anchorDate), endOfWeek(anchorDate)) : monthKeyLabel(month);
 
   const activeFixedExpenses = useMemo(() => fixedExpenses.filter((f) => f.is_active), [fixedExpenses]);
   const selectedCategory = categoryId !== null ? categoryById[categoryId] : undefined;
@@ -160,12 +191,18 @@ export default function TransactionHistoryPage() {
       <TopBar title="Historial de gastos" onBack={() => navigate(-1)} />
       {error ? <ErrorBanner message={error} onRetry={refresh} /> : null}
 
+      <div style={styles.chipsRow}>
+        <Chip label="Día" active={granularity === 'day'} onPress={() => setGranularity('day')} />
+        <Chip label="Semana" active={granularity === 'week'} onPress={() => setGranularity('week')} />
+        <Chip label="Mes" active={granularity === 'month'} onPress={() => setGranularity('month')} />
+      </div>
+
       <div style={styles.monthRow}>
-        <Pressable onClick={() => changeMonth(-1)} style={styles.monthArrow}>
+        <Pressable onClick={() => changePeriod(-1)} style={styles.monthArrow}>
           <Icon name="chevron-back" size={16} color={colors.textSecondary} />
         </Pressable>
-        <span style={styles.monthLabel}>{monthKeyLabel(month)}</span>
-        <Pressable onClick={() => changeMonth(1)} style={styles.monthArrow}>
+        <span style={styles.monthLabel}>{periodLabel}</span>
+        <Pressable onClick={() => changePeriod(1)} style={styles.monthArrow}>
           <Icon name="chevron-forward" size={16} color={colors.textSecondary} />
         </Pressable>
       </div>

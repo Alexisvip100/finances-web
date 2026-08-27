@@ -99,6 +99,26 @@ export function maskDateInput(text: string): string {
   return [year, month, day].filter(Boolean).join('-');
 }
 
+export function shiftDate(iso: string, deltaDays: number): string {
+  const d = parseISODate(iso);
+  d.setDate(d.getDate() + deltaDays);
+  return toISODate(d);
+}
+
+/** Lunes de la semana que contiene `iso`. */
+export function startOfWeek(iso: string): string {
+  const d = parseISODate(iso);
+  const day = d.getDay(); // 0 = domingo .. 6 = sábado
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diffToMonday);
+  return toISODate(d);
+}
+
+/** Domingo de la semana que contiene `iso`. */
+export function endOfWeek(iso: string): string {
+  return shiftDate(startOfWeek(iso), 6);
+}
+
 export function shiftMonthKey(monthKey: string, delta: number): string {
   const [year, month] = monthKey.split('-').map(Number);
   const zeroBased = (month - 1) + delta;

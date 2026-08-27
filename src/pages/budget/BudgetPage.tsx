@@ -12,6 +12,8 @@ import { deleteCategoryThunk, updateCategoryThunk } from '../../store/slices/cat
 import { updateSpendingGoalThunk } from '../../store/slices/authSlice';
 import { formatMoney } from '../../utils/currency';
 import { formatShort, monthKeyLabel, shiftMonthKey } from '../../utils/dateHelpers';
+import { CategoryTransactionsSheet } from './CategoryTransactionsSheet';
+import type { CategoryBudget } from '../../types';
 
 // Pasteles, pero separados por hue (no tonos vecinos) para que categorías
 // distintas no se confundan entre sí en la dona/leyenda.
@@ -93,6 +95,7 @@ export default function BudgetPage() {
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const [savingGoal, setSavingGoal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryBudget | null>(null);
 
   useEffect(() => {
     dispatch(fetchBudgetThunk(month));
@@ -281,12 +284,16 @@ export default function BudgetPage() {
             return (
               <div
                 key={c.category_id}
+                onClick={() => {
+                  if (!isEditing) setSelectedCategory(c);
+                }}
                 style={{
                   background: colors.surface,
                   borderRadius: radius.card,
                   padding: spacing.md,
                   marginBottom: spacing.sm,
                   border: overBudget ? `1px solid ${colors.danger}` : 'none',
+                  cursor: isEditing ? 'default' : 'pointer',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: spacing.sm }}>
@@ -327,10 +334,23 @@ export default function BudgetPage() {
                   ) : null}
                   {!isEditing ? (
                     <div style={{ display: 'flex', gap: 2, marginLeft: spacing.xs }}>
-                      <Pressable onClick={() => startEdit(c.category_id, c.category_name, c.monthly_limit)} style={iconBtnStyle}>
+                      <Pressable
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEdit(c.category_id, c.category_name, c.monthly_limit);
+                        }}
+                        style={iconBtnStyle}
+                      >
                         <Icon name="pencil-outline" size={15} color={colors.textSecondary} />
                       </Pressable>
-                      <Pressable onClick={() => handleDelete(c.category_id)} disabled={deletingId === c.category_id} style={iconBtnStyle}>
+                      <Pressable
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(c.category_id);
+                        }}
+                        disabled={deletingId === c.category_id}
+                        style={iconBtnStyle}
+                      >
                         <Icon name="trash-outline" size={15} color={colors.danger} />
                       </Pressable>
                     </div>
@@ -359,6 +379,8 @@ export default function BudgetPage() {
           })}
         </>
       )}
+
+      <CategoryTransactionsSheet category={selectedCategory} month={month} onClose={() => setSelectedCategory(null)} />
     </PageShell>
   );
 }
