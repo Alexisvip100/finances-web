@@ -59,6 +59,38 @@ function Donut({ segments }: { segments: { color: string; fraction: number }[] }
   );
 }
 
+// Alternativa a la dona: comparar montos exactos entre categorías es más
+// fácil con barras que con proporciones de un círculo.
+function CategoryBarChart({ segments }: { segments: { category: CategoryBudget; color: string }[] }) {
+  const sorted = [...segments].sort((a, b) => Number(b.category.spent) - Number(a.category.spent));
+  const max = sorted.length > 0 ? Number(sorted[0].category.spent) : 0;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: spacing.lg, width: '100%' }}>
+      {sorted.map((s) => {
+        const spent = Number(s.category.spent);
+        const widthPercent = max > 0 ? Math.max(4, (spent / max) * 100) : 0;
+        return (
+          <div key={s.category.category_id}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: 700 }}>{s.category.category_name}</span>
+              <span style={{ color: colors.textSecondary, fontSize: fontSize.sm, fontWeight: 700 }}>{formatMoney(spent)}</span>
+            </div>
+            <div style={{ background: colors.surfaceAlt, borderRadius: radius.pill, height: 10, overflow: 'hidden' }}>
+              <div style={{ width: `${widthPercent}%`, height: '100%', background: s.color, borderRadius: radius.pill }} />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+const CHART_VIEWS: { value: 'donut' | 'bar'; label: string; icon: string }[] = [
+  { value: 'donut', label: 'Circular', icon: 'pie-chart-outline' },
+  { value: 'bar', label: 'Lineal', icon: 'bar-chart-outline' },
+];
+
 const editInputStyle: React.CSSProperties = { color: colors.textPrimary, background: 'none', border: 'none', padding: 0 };
 const iconBtnStyle: React.CSSProperties = { padding: spacing.sm };
 
@@ -77,6 +109,7 @@ export default function BudgetPage() {
   const [goalInput, setGoalInput] = useState('');
   const [savingGoal, setSavingGoal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryBudget | null>(null);
+  const [chartView, setChartView] = useState<'donut' | 'bar'>('donut');
 
   useEffect(() => {
     dispatch(fetchBudgetThunk(month));
@@ -233,30 +266,73 @@ export default function BudgetPage() {
         <EmptyState icon="pie-chart-outline" title="Sin gastos este mes" description="Cuando registres gastos, aquí verás el desglose por categoría." />
       ) : (
         <>
-          <motion.div
-            key={month}
-            initial={{ opacity: 0, scale: 0.94 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.45, ease: DONUT_EASE }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: spacing.xl }}
-          >
-            <Donut segments={segments} />
-            <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: DONUT_SIZE - DONUT_STROKE * 2 - 24 }}>
-              <span style={{ color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5 }}>TOTAL GASTADO</span>
-              <span style={{ color: colors.textPrimary, fontSize: fontSize.xl, fontWeight: 800, marginTop: 4, textAlign: 'center' }}>
-                {formatMoney(totalSpent)}
-              </span>
-            </div>
-          </motion.div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.lg, marginBottom: spacing.xxl }}>
-            {segments.map((s) => (
-              <div key={s.category.category_id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ width: 8, height: 8, borderRadius: 4, background: s.color, display: 'inline-block' }} />
-                <span style={{ color: colors.textSecondary, fontSize: fontSize.xs }}>{s.category.category_name}</span>
-              </div>
-            ))}
+          <div style={{ display: 'flex', justifyContent: 'center', background: colors.surface, borderRadius: radius.pill, padding: 4, margin: `0 auto ${spacing.lg}px`, width: 'fit-content' }}>
+            {CHART_VIEWS.map((v) => {
+              const active = chartView === v.value;
+              return (
+                <Pressable
+                  key={v.value}
+                  onClick={() => setChartView(v.value)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: `${spacing.sm}px ${spacing.lg}px`,
+                    borderRadius: radius.pill,
+                    background: active ? colors.accent : 'transparent',
+                    color: active ? colors.black : colors.textSecondary,
+                    fontWeight: 700,
+                    fontSize: fontSize.sm,
+                  }}
+                >
+                  <Icon name={v.icon} size={14} color={active ? colors.black : colors.textSecondary} />
+                  {v.label}
+                </Pressable>
+              );
+            })}
           </div>
+
+          {chartView === 'donut' ? (
+            <motion.div
+              key={`donut-${month}`}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.45, ease: DONUT_EASE }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: spacing.xl }}
+            >
+              <Donut segments={segments} />
+              <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: DONUT_SIZE - DONUT_STROKE * 2 - 24 }}>
+                <span style={{ color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5 }}>TOTAL GASTADO</span>
+                <span style={{ color: colors.textPrimary, fontSize: fontSize.xl, fontWeight: 800, marginTop: 4, textAlign: 'center' }}>
+                  {formatMoney(totalSpent)}
+                </span>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`bar-${month}`}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.45, ease: DONUT_EASE }}
+              style={{ marginBottom: spacing.xl }}
+            >
+              <p style={{ color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5, marginBottom: spacing.lg }}>
+                TOTAL GASTADO · {formatMoney(totalSpent)}
+              </p>
+              <CategoryBarChart segments={segments} />
+            </motion.div>
+          )}
+
+          {chartView === 'donut' ? (
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.lg, marginBottom: spacing.xxl }}>
+              {segments.map((s) => (
+                <div key={s.category.category_id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 4, background: s.color, display: 'inline-block' }} />
+                  <span style={{ color: colors.textSecondary, fontSize: fontSize.xs }}>{s.category.category_name}</span>
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           <h2 style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800, marginBottom: spacing.lg }}>Desglose por categoría</h2>
           {data.categories.map((c) => {
