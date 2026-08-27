@@ -14,7 +14,9 @@ import { fetchAccountsThunk } from '../store/slices/accountsSlice';
 import { fetchCardsThunk } from '../store/slices/cardsSlice';
 import { fetchCategoriesThunk, createCategoryThunk } from '../store/slices/categoriesSlice';
 import { createTransactionThunk } from '../store/slices/transactionsSlice';
+import { pushToast } from '../notifications/toastBus';
 import { previewCycleBounds } from '../utils/cycleHelpers';
+import { formatMoney } from '../utils/currency';
 import { formatShort, parseISODate, todayISO, toISODate } from '../utils/dateHelpers';
 import { DateSheetPicker } from '../components/DateSheetPicker';
 import { accountLabel, cardLabel } from '../utils/labels';
@@ -102,6 +104,7 @@ export default function AddExpensePage() {
           installment_months: method.kind === 'card' && isMsi ? Number(months) : undefined,
         })
       ).unwrap();
+      pushToast({ kind: 'success', title: 'Compra registrada', message: `${formatMoney(amount)} · ${formatShort(customDate)}` });
       navigate(-1);
     } catch {
       // el error ya se muestra desde el slice

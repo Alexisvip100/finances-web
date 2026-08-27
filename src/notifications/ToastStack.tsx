@@ -9,6 +9,13 @@ import type { ToastItem } from './types';
 
 const IOS_EASE = [0.32, 0.72, 0, 1] as const;
 const UPDATE_AUTO_DISMISS_MS = 7000;
+const SUCCESS_AUTO_DISMISS_MS = 2200;
+
+const TOAST_META: Record<ToastItem['kind'], { title: string; icon: string; bg: string; color: string }> = {
+  error: { title: 'No se pudo completar', icon: 'cloud-offline-outline', bg: colors.dangerMuted, color: colors.danger },
+  update: { title: 'Actualización disponible', icon: 'sparkles-outline', bg: colors.accentMuted, color: colors.accent },
+  success: { title: 'Listo', icon: 'checkmark-circle', bg: colors.accentMuted, color: colors.accent },
+};
 
 export function ToastStack({
   toasts,
@@ -71,14 +78,18 @@ function ToastBanner({
   onAcceptUpdate: () => void;
 }) {
   const isUpdate = toast.kind === 'update';
+  const isSuccess = toast.kind === 'success';
+  const meta = TOAST_META[toast.kind];
 
-  // Como una notificación de iOS: si no se toca, se retira sola después de un rato.
+  // Como una notificación de iOS: si no se toca, se retira sola después de un rato
+  // (las de error se quedan — ahí sí importa que el usuario decida qué hacer).
   useEffect(() => {
-    if (!isUpdate) return;
-    const timer = setTimeout(onDismiss, UPDATE_AUTO_DISMISS_MS);
+    const autoDismissMs = isUpdate ? UPDATE_AUTO_DISMISS_MS : isSuccess ? SUCCESS_AUTO_DISMISS_MS : null;
+    if (autoDismissMs === null) return;
+    const timer = setTimeout(onDismiss, autoDismissMs);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isUpdate]);
+  }, [isUpdate, isSuccess]);
 
   function handleDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.y < -36 || info.velocity.y < -350) onDismiss();
@@ -108,16 +119,9 @@ function ToastBanner({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: spacing.md }}>
-        <IconCircle
-          name={isUpdate ? 'sparkles-outline' : 'cloud-offline-outline'}
-          bg={isUpdate ? colors.accentMuted : colors.dangerMuted}
-          color={isUpdate ? colors.accent : colors.danger}
-          size={36}
-        />
+        <IconCircle name={meta.icon} bg={meta.bg} color={meta.color} size={36} />
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 800, margin: 0 }}>
-            {isUpdate ? 'Actualización disponible' : 'No se pudo completar'}
-          </p>
+          <p style={{ color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 800, margin: 0 }}>{toast.title ?? meta.title}</p>
           <p style={{ color: colors.textSecondary, fontSize: fontSize.sm, margin: '2px 0 0' }}>{toast.message}</p>
         </div>
         <Pressable onClick={onDismiss} style={{ padding: spacing.xs, flexShrink: 0 }} aria-label="Cerrar">
@@ -125,6 +129,7 @@ function ToastBanner({
         </Pressable>
       </div>
 
+      {isSuccess ? null : (
       <div style={{ display: 'flex', gap: spacing.sm, marginTop: spacing.md }}>
         {isUpdate ? (
           <Pressable
@@ -179,6 +184,7 @@ function ToastBanner({
           </>
         )}
       </div>
+      )}
     </motion.div>
   );
 }

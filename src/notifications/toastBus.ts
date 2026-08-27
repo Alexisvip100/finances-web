@@ -3,11 +3,12 @@
 // importa componentes; solo llama a estas funciones, y NotificationHost se
 // registra como listener una vez, al montar.
 
-export type ToastKind = 'error' | 'update';
+export type ToastKind = 'error' | 'update' | 'success';
 
 export interface ToastInput {
   kind: ToastKind;
   message: string;
+  title?: string;
   // Si dos errores vienen del mismo endpoint (ej. reintentos automáticos de
   // varias pantallas pidiendo lo mismo), no apilar notificaciones duplicadas.
   requestKey?: string;
