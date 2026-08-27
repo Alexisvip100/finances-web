@@ -11,7 +11,7 @@ import { fetchBudgetThunk, setMonth } from '../../store/slices/budgetSlice';
 import { deleteCategoryThunk, updateCategoryThunk } from '../../store/slices/categoriesSlice';
 import { updateSpendingGoalThunk } from '../../store/slices/authSlice';
 import { formatMoney } from '../../utils/currency';
-import { monthKeyLabel, shiftMonthKey } from '../../utils/dateHelpers';
+import { formatShort, monthKeyLabel, shiftMonthKey } from '../../utils/dateHelpers';
 
 // Pasteles, pero separados por hue (no tonos vecinos) para que categorías
 // distintas no se confundan entre sí en la dona/leyenda.
@@ -308,9 +308,16 @@ export default function BudgetPage() {
                         />
                       </div>
                     ) : (
-                      <p style={{ color: colors.textSecondary, fontSize: fontSize.xs, margin: '1px 0 0' }}>
-                        {formatMoney(spent)} {limit !== null ? `de ${formatMoney(limit)}` : ''}
-                      </p>
+                      <>
+                        <p style={{ color: colors.textSecondary, fontSize: fontSize.xs, margin: '1px 0 0' }}>
+                          {formatMoney(spent)} {limit !== null ? `de ${formatMoney(limit)}` : ''}
+                        </p>
+                        {c.created_at ? (
+                          <p style={{ color: colors.textMuted, fontSize: fontSize.xs, margin: '1px 0 0' }}>
+                            Creada el {formatShort(c.created_at.slice(0, 10))}
+                          </p>
+                        ) : null}
+                      </>
                     )}
                   </div>
                   {!isEditing && overBudget ? (

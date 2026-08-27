@@ -165,6 +165,7 @@ export interface CategoryBudget {
   spent: string;
   credit_spent: string;
   credit_pending: string;
+  created_at: string | null;
 }
 
 export interface BudgetResponse {
