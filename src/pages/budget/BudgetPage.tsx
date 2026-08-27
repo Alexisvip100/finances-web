@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { PageShell } from '../../components/PageShell';
 import { ProgressBar } from '../../components/cards/ProgressBar';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../components/Misc';
@@ -21,29 +22,9 @@ const DONUT_COLORS = ['#A8E0A0', '#8FC6E8', '#F2A6C6', '#C6A8E8', '#F2C48F', '#8
 const DONUT_SIZE = 220;
 const DONUT_STROKE = 20;
 
-// Anima de 0 -> target cada vez que target cambia (entrar a la tab, cambiar
-// de mes, etc.) — usado tanto para el número "TOTAL GASTADO" como para que
-// los arcos de la dona crezcan en sincronía con el conteo.
-function useCountUp(target: number, duration = 900) {
-  const [value, setValue] = useState(0);
+const DONUT_EASE = [0.32, 0.72, 0, 1] as const;
 
-  useEffect(() => {
-    let raf: number;
-    const start = performance.now();
-    const animate = (now: number) => {
-      const t = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setValue(target * eased);
-      if (t < 1) raf = requestAnimationFrame(animate);
-    };
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, [target, duration]);
-
-  return value;
-}
-
-function Donut({ segments, progress = 1 }: { segments: { color: string; fraction: number }[]; progress?: number }) {
+function Donut({ segments }: { segments: { color: string; fraction: number }[] }) {
   const size = DONUT_SIZE;
   const strokeWidth = DONUT_STROKE;
   const radiusPx = (size - strokeWidth) / 2;
@@ -54,7 +35,7 @@ function Donut({ segments, progress = 1 }: { segments: { color: string; fraction
     <svg width={size} height={size}>
       <circle cx={size / 2} cy={size / 2} r={radiusPx} stroke={colors.surfaceAlt} strokeWidth={strokeWidth} fill="none" />
       {segments.map((s, idx) => {
-        const fraction = s.fraction * progress;
+        const fraction = s.fraction;
         const dash = circumference * fraction;
         const offset = circumference * (1 - cumulative);
         cumulative += fraction;
@@ -161,8 +142,6 @@ export default function BudgetPage() {
   };
 
   const totalSpent = data ? Number(data.total_spent) : 0;
-  const animatedTotalSpent = useCountUp(totalSpent);
-  const donutProgress = totalSpent > 0 ? Math.min(1, animatedTotalSpent / totalSpent) : 1;
   const segments = useMemo(() => {
     if (!data || totalSpent === 0) return [];
     return data.categories
@@ -254,15 +233,21 @@ export default function BudgetPage() {
         <EmptyState icon="pie-chart-outline" title="Sin gastos este mes" description="Cuando registres gastos, aquí verás el desglose por categoría." />
       ) : (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: spacing.xl }}>
-            <Donut segments={segments} progress={donutProgress} />
+          <motion.div
+            key={month}
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.45, ease: DONUT_EASE }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: spacing.xl }}
+          >
+            <Donut segments={segments} />
             <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', width: DONUT_SIZE - DONUT_STROKE * 2 - 24 }}>
               <span style={{ color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5 }}>TOTAL GASTADO</span>
               <span style={{ color: colors.textPrimary, fontSize: fontSize.xl, fontWeight: 800, marginTop: 4, textAlign: 'center' }}>
-                {formatMoney(animatedTotalSpent)}
+                {formatMoney(totalSpent)}
               </span>
             </div>
-          </div>
+          </motion.div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.lg, marginBottom: spacing.xxl }}>
             {segments.map((s) => (
