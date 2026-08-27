@@ -1,4 +1,4 @@
-import axios, { type AxiosError } from 'axios';
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { API_BASE_URL } from '../config';
 import { notifyRequestSucceeded, pushToast } from '../notifications/toastBus';
 
@@ -44,20 +44,40 @@ function isRetryableNetworkError(error: AxiosError): boolean {
   return !!status && status >= 500;
 }
 
+type RetriableConfig = InternalAxiosRequestConfig & { _autoRetried?: boolean };
+
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 apiClient.interceptors.response.use(
   (response) => {
     notifyRequestSucceeded(`${response.config.method ?? ''}:${response.config.url ?? ''}`);
     return response;
   },
-  (error) => {
+  async (error) => {
+    if (!axios.isAxiosError(error) || !isRetryableNetworkError(error)) {
+      return Promise.reject(error);
+    }
+
+    // El caso más común es un "cold start" de las funciones serverless del
+    // backend — casi siempre basta con reintentar una vez, sin molestar al
+    // usuario, en vez de mostrarle de una la notificación de error.
+    const config = error.config as RetriableConfig | undefined;
+    if (config && !config._autoRetried) {
+      config._autoRetried = true;
+      await wait(700);
+      try {
+        return await apiClient.request(config);
+      } catch (retryError) {
+        error = retryError;
+      }
+    }
+
     if (axios.isAxiosError(error) && isRetryableNetworkError(error)) {
-      const config = error.config;
-      const requestKey = requestKeyFor(error);
       pushToast({
         kind: 'error',
         message: extractErrorMessage(error),
-        requestKey,
-        onRetry: config ? () => apiClient.request(config) : undefined,
+        requestKey: requestKeyFor(error),
+        onRetry: error.config ? () => apiClient.request(error.config!) : undefined,
       });
     }
     return Promise.reject(error);
