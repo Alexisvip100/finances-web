@@ -32,7 +32,7 @@ import OnboardingIncomePage from './pages/onboarding/OnboardingIncomePage';
 
 function LoadingScreen() {
   return (
-    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: colors.background }}>
+    <div style={{ height: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: colors.background }}>
       <span
         style={{
           width: 32,

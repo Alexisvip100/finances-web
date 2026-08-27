@@ -85,12 +85,14 @@ export default function AppShell() {
         .app-shell {
           display: flex;
           height: 100vh;
+          height: 100dvh;
           background: ${colors.background};
         }
         .app-content {
           flex: 1;
           min-width: 0;
           height: 100vh;
+          height: 100dvh;
           overflow: hidden;
           padding-bottom: 76px;
         }
