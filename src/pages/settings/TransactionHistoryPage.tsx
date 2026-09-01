@@ -352,11 +352,18 @@ export default function TransactionHistoryPage() {
       ) : (
         groupedByDay.map(([date, txns]) => (
           <div key={date} style={{ marginBottom: spacing.lg }}>
+            
+            <div style={styles.dayHeaderContainer}>
             <p style={styles.dayHeader}>{formatShort(date)}</p>
+            <div style={styles.dayTotal}>
+              <p style={styles.dayTotalLabel}>Total {formatMoney(txns.reduce((sum, t) => sum + Number(t.amount), 0))}</p>
+            </div>
+            </div>
             {txns.map((t) => {
               const category = t.category_id !== null ? categoryById[t.category_id] : undefined;
               return (
                 <div key={t.id} style={styles.txnRow}>
+                  
                   <IconCircle
                     name={categoryIcons[category?.name ?? ''] ?? 'file-tray-outline'}
                     bg={colors.surfaceAlt}
@@ -453,6 +460,9 @@ const styles: Record<string, React.CSSProperties> = {
   modalRowLabel: { flex: 1, color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 600, textAlign: 'left' },
   divider: { height: 1, background: colors.divider, marginTop: spacing.xl, marginBottom: spacing.lg },
   dayHeader: { color: colors.accent, fontSize: fontSize.xs, fontWeight: 700, marginBottom: spacing.sm, textTransform: 'uppercase' },
+  dayTotal: { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', background: colors.surface, borderRadius: radius.card, padding: spacing.md, marginBottom: spacing.sm },
+  dayTotalLabel: { color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, margin: 0 },
+  dayHeaderContainer: { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: radius.card, padding: spacing.sm},
   txnRow: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.surface, borderRadius: radius.card, padding: spacing.md, marginBottom: spacing.sm },
   txnLabel: { color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 600, margin: 0 },
   txnMeta: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: 2, margin: 0 },
