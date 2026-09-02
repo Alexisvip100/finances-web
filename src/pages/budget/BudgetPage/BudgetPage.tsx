@@ -221,7 +221,7 @@ export default function BudgetPage() {
 
           return (
             <div key={c.category_id} style={styles.categoryCard}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: spacing.md }}>
                 <IconCircle
                   name={categoryIcons[c.category_name] ?? 'pricetag-outline'}
                   bg={colors.surfaceAlt}
@@ -283,7 +283,7 @@ export default function BudgetPage() {
               </div>
 
               {percent !== null ? (
-                <div style={{ marginTop: spacing.md }}>
+                <div style={{ marginTop: spacing.md, marginBottom: spacing.md }}>
                   <ProgressBar percent={percent} color={percent >= 100 ? colors.danger : colors.accent} />
                 </div>
               ) : null}
