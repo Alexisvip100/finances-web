@@ -1,90 +1,45 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { TopBar } from '../../../components/TopBar';
-import { Card } from '../../../components/Card';
+import { PrimaryButton, SecondaryButton } from '../../../components/Buttons';
 import { Pressable } from '../../../components/Pressable';
 import { Icon } from '../../../components/Icon';
 import { Portal } from '../../../components/Portal';
-import { PrimaryButton, SecondaryButton } from '../../../components/Buttons';
 import { ProgressBar } from '../../../components/cards/ProgressBar';
 import { CycleRing } from '../../../components/cards/CycleRing';
 import { ErrorBanner, IconCircle } from '../../../components/Misc';
-import { colors, categoryIcons, fontSize, radius, spacing } from '../../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../../store';
-import { fetchCardDetailThunk } from '../../../store/slices/cardsSlice';
-import { fetchCategoriesThunk } from '../../../store/slices/categoriesSlice';
-import * as cardsApi from '../../../api/cards';
-import { Category, Transaction } from '../../../types';
+import { colors, categoryIcons, fontSize, spacing } from '../../../theme/theme';
+import { Transaction } from '../../../types';
 import { formatMoney } from '../../../utils/currency';
-import { daysBetween, formatShort, formatRelativeToToday, todayISO } from '../../../utils/dateHelpers';
+import { formatShort, formatRelativeToToday } from '../../../utils/dateHelpers';
 import { styles } from './CardDetailPage.styles';
+import { useCardDetailPage } from './CardDetailPage.hooks';
 
 export default function CardDetailPage() {
-  const navigate = useNavigate();
-  const { cardId: cardIdParam } = useParams();
-  const cardId = Number(cardIdParam);
-  const dispatch = useAppDispatch();
-  const detail = useAppSelector((s) => s.cards.detailById[cardId]);
-  const error = useAppSelector((s) => s.cards.error);
-  const categories = useAppSelector((s) => s.categories.items);
-  const [cycleTransactions, setCycleTransactions] = useState<Transaction[]>([]);
-  const [paidCycleModalOpen, setPaidCycleModalOpen] = useState(false);
-  const [paidCycleTransactions, setPaidCycleTransactions] = useState<Transaction[] | null>(null);
-  const [currentCycleModalOpen, setCurrentCycleModalOpen] = useState(false);
-
-  const refresh = () => {
-    dispatch(fetchCardDetailThunk(cardId));
-    dispatch(fetchCategoriesThunk());
-  };
-
-  useEffect(() => {
-    refresh();
-  }, [cardId]);
-
-  useEffect(() => {
-    if (detail?.current_cycle) {
-      cardsApi.fetchCycleTransactions(cardId, detail.current_cycle.id).then(setCycleTransactions);
-    }
-  }, [cardId, detail?.current_cycle?.id]);
-
-  const categoryById = useMemo(() => {
-    const map: Record<number, Category> = {};
-    categories.forEach((c) => (map[c.id] = c));
-    return map;
-  }, [categories]);
-
-  const groupByDay = (txns: Transaction[]) => {
-    const groups: Record<string, Transaction[]> = {};
-    txns.forEach((t) => {
-      groups[t.transaction_date] = groups[t.transaction_date] ?? [];
-      groups[t.transaction_date].push(t);
-    });
-    return Object.entries(groups).sort((a, b) => (a[0] < b[0] ? 1 : -1));
-  };
-
-  const groupedByDay = useMemo(() => groupByDay(cycleTransactions), [cycleTransactions]);
-  const groupedPaidCycleTransactions = useMemo(
-    () => (paidCycleTransactions ? groupByDay(paidCycleTransactions) : []),
-    [paidCycleTransactions]
-  );
-
-  const openPaidCycleModal = async () => {
-    if (!detail?.last_paid_cycle) return;
-    setPaidCycleModalOpen(true);
-    if (!paidCycleTransactions) {
-      const txns = await cardsApi.fetchCycleTransactions(cardId, detail.last_paid_cycle.id);
-      setPaidCycleTransactions(txns);
-    }
-  };
-
-  const openCurrentCycleModal = () => {
-    setCurrentCycleModalOpen(true);
-  };
-
-  const handleDeleteTxn = async (id: number) => {
-    await cardsApi.deleteCard(id); // fallback
-  };
+  const {
+    cardId,
+    navigate,
+    detail,
+    error,
+    categoryById,
+    cycle,
+    pending,
+    paidCycle,
+    pendingRemaining,
+    allocated,
+    allocatedPercent,
+    totalCycleDays,
+    currentDayIndex,
+    groupedByDay,
+    groupedPaidCycleTransactions,
+    paidCycleModalOpen,
+    currentCycleModalOpen,
+    setPaidCycleModalOpen,
+    setCurrentCycleModalOpen,
+    openPaidCycleModal,
+    openCurrentCycleModal,
+    handleDeleteTxn,
+  } = useCardDetailPage();
 
   const renderTxnGroups = (groups: [string, Transaction[]][], canDelete: boolean) =>
     groups.map(([date, txns]) => (
@@ -110,7 +65,7 @@ export default function CardDetailPage() {
               <span style={styles.txnValue}>{formatMoney(t.amount)}</span>
               {canDelete ? (
                 <Pressable onClick={() => handleDeleteTxn(t.id)} style={styles.deleteBtn}>
-                  <Icon name="trash-outline" size={16} color={colors.textMuted} />
+                  <Icon name="trash-outline" size={16} color={colors.danger} />
                 </Pressable>
               ) : null}
             </div>
@@ -119,204 +74,205 @@ export default function CardDetailPage() {
       </div>
     ));
 
-  if (!detail) {
-    return (
-      <PageShell>
-        <TopBar title="Cargando…" onBack={() => navigate(-1)} />
-        {error ? <ErrorBanner message={error} onRetry={refresh} /> : null}
-      </PageShell>
-    );
-  }
-
-  const cycle = detail.current_cycle;
-  const pending = detail.pending_cycle;
-  const paidCycle = detail.last_paid_cycle;
-  const pendingRemaining = pending ? Number(pending.total_amount) - Number(pending.paid_amount) : 0;
-  const allocated = Number(detail.allocated_for_pending_cycle);
-  const allocatedPercent = pendingRemaining > 0 ? Math.min(100, Math.round((allocated / pendingRemaining) * 100)) : 0;
-
-  const totalCycleDays = cycle ? Math.max(1, daysBetween(cycle.start_date, cycle.end_date)) : 30;
-  const currentDayIndex = cycle ? Math.max(1, Math.min(totalCycleDays, daysBetween(cycle.start_date, todayISO()) + 1)) : 1;
-
   return (
-    <PageShell contentStyle={{ paddingBottom: 140 }}>
+    <PageShell contentStyle={{ paddingBottom: 120 }}>
       <TopBar
-        title={detail.name}
+        title={detail?.name ?? 'Tarjeta'}
         onBack={() => navigate(-1)}
         right={
-          <Pressable onClick={() => navigate(`/tarjetas/${cardId}/editar`)} style={{ padding: spacing.sm }}>
-            <Icon name="settings-outline" size={20} color={colors.textPrimary} />
+          <Pressable onClick={() => navigate(`/tarjetas/${cardId}/editar`)} style={{ padding: spacing.xs }}>
+            <Icon name="pencil-outline" size={18} color={colors.textSecondary} />
           </Pressable>
         }
       />
 
-      {error ? <ErrorBanner message={error} onRetry={refresh} /> : null}
+      {error ? <ErrorBanner message={error} /> : null}
 
-      <div style={styles.cardHeader}>
-        <IconCircle name="card" bg={colors.surfaceAlt} color={detail.color ?? colors.accent} size={48} />
-        <div style={{ flex: 1, marginLeft: spacing.md }}>
-          <p style={styles.cardName}>
-            {detail.name} ••••{detail.last_four}
-          </p>
-          <p style={styles.cardBank}>{detail.bank}</p>
+      {/* Ciclo actual / abierto */}
+      <div style={styles.card}>
+        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <div style={{ flex: 1 }}>
+            <span style={styles.sectionTitle}>Ciclo actual</span>
+            <p style={styles.amountLarge}>{cycle ? formatMoney(cycle.total_amount) : '—'}</p>
+            {cycle ? (
+              <p style={styles.cycleDates}>
+                {formatShort(cycle.start_date)} – {formatShort(cycle.end_date)}
+              </p>
+            ) : null}
+            {detail ? (
+              <p style={styles.creditLimit}>
+                Límite: {formatMoney(detail.credit_limit)} · Disp: {formatMoney(detail.available_credit)}
+              </p>
+            ) : null}
+          </div>
+          <CycleRing dayIndex={currentDayIndex} totalDays={totalCycleDays} size={84} strokeWidth={8} />
         </div>
+
+        {groupedByDay.length > 0 ? (
+          <Pressable onClick={openCurrentCycleModal} style={{ marginTop: spacing.md }}>
+            <span style={{ color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 }}>
+              Ver compras de este ciclo ({cycleTransactionsCount(groupedByDay)}) →
+            </span>
+          </Pressable>
+        ) : null}
       </div>
 
-      {cycle ? (
-        <Card style={{ marginBottom: spacing.lg }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: colors.textSecondary, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5 }}>
-              DÍAS DEL CICLO
-            </span>
-            <span style={{ color: colors.textPrimary, fontSize: fontSize.sm, fontWeight: 700 }}>
-              Corte {formatShort(cycle.end_date)} ({formatRelativeToToday(cycle.end_date)})
-            </span>
-          </div>
-
-          <div style={styles.ringContainer}>
-            <CycleRing dayIndex={currentDayIndex} totalDays={totalCycleDays} size={160} strokeWidth={12} color={detail.color ?? colors.accent} />
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <p style={{ color: colors.textMuted, fontSize: fontSize.xs, margin: 0 }}>Acumulado actual</p>
-              <p style={{ color: colors.textPrimary, fontSize: fontSize.xl, fontWeight: 800, margin: 0 }}>{formatMoney(cycle.total_amount)}</p>
-            </div>
-            <Pressable
-              onClick={openCurrentCycleModal}
-              style={{ padding: `${spacing.sm}px ${spacing.md}px`, borderRadius: radius.pill, background: colors.surfaceAlt }}
-            >
-              <span style={{ color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 }}>Ver movimientos</span>
-            </Pressable>
-          </div>
-        </Card>
-      ) : null}
-
-      <div style={styles.statRow}>
-        <Card style={{ flex: 1 }}>
-          <p style={{ color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5, margin: '0 0 4px' }}>LÍMITE</p>
-          <p style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800, margin: 0 }}>{formatMoney(detail.credit_limit)}</p>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <p style={{ color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 700, letterSpacing: 0.5, margin: '0 0 4px' }}>DISPONIBLE</p>
-          <p style={{ color: colors.accent, fontSize: fontSize.lg, fontWeight: 800, margin: 0 }}>{formatMoney(detail.available_credit)}</p>
-        </Card>
-      </div>
-
+      {/* Ciclo cerrado pendiente de pago */}
       {pending ? (
-        <div style={styles.pendingBox}>
+        <div style={styles.pendingCard}>
           <div style={styles.pendingHeader}>
             <div>
-              <p style={styles.pendingLabel}>CICLO POR PAGAR</p>
+              <p style={styles.pendingTitle}>POR PAGAR (CORTE ANTERIOR)</p>
               <p style={styles.pendingAmount}>{formatMoney(pendingRemaining)}</p>
             </div>
             <div style={styles.dueBadge}>
-              <span style={styles.dueBadgeText}>Pagar antes de {formatShort(pending.due_date)}</span>
+              <span style={styles.dueText}>Vence {formatRelativeToToday(pending.due_date)}</span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: spacing.sm }}>
-            <span style={{ color: colors.textSecondary, fontSize: fontSize.xs, fontWeight: 600 }}>Apartado para este pago</span>
-            <span style={{ color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 }}>
-              {formatMoney(allocated)} ({allocatedPercent}%)
+          <div style={styles.allocatedRow}>
+            <p style={styles.pendingTitle}>APARTADO</p>
+            <span style={{ color: colors.accent, fontSize: fontSize.sm, fontWeight: 700 }}>
+              {formatMoney(allocated)} / {formatMoney(pendingRemaining)}
             </span>
           </div>
           <ProgressBar percent={allocatedPercent} color={colors.accent} />
 
-          <div style={styles.actionsRow}>
-            <SecondaryButton label="Apartar" onPress={() => navigate(`/tarjetas/${cardId}/apartar`)} style={styles.actionBtn} />
-            <PrimaryButton label="Pagar" onPress={() => navigate(`/tarjetas/${cardId}/pagar`)} style={styles.actionBtn} />
-          </div>
-        </div>
-      ) : paidCycle ? (
-        <div style={styles.pendingBox}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                <Icon name="checkmark-circle" size={16} color={colors.accent} />
-                <span style={{ color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 }}>Ciclo anterior pagado</span>
-              </div>
-              <p style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800, margin: 0 }}>
-                {formatMoney(paidCycle.total_amount)}
-              </p>
-              <p style={{ color: colors.textMuted, fontSize: fontSize.xs, margin: '2px 0 0' }}>
-                Venció el {formatShort(paidCycle.due_date)}
-              </p>
-            </div>
-            <Pressable
-              onClick={openPaidCycleModal}
-              style={{ padding: `${spacing.sm}px ${spacing.md}px`, borderRadius: radius.pill, background: colors.surfaceAlt }}
-            >
-              <span style={{ color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 }}>Ver consumos</span>
-            </Pressable>
+          <div style={styles.buttonRow}>
+            <SecondaryButton
+              label="Apartar dinero"
+              onPress={() => navigate(`/tarjetas/${cardId}/apartar`)}
+              style={{ flex: 1 }}
+            />
+            <PrimaryButton
+              label="Registrar pago"
+              onPress={() => navigate(`/tarjetas/${cardId}/pagar`)}
+              style={{ flex: 1 }}
+            />
           </div>
         </div>
       ) : null}
 
-      {paidCycleModalOpen && paidCycle ? (
-        <Portal>
-        <div style={styles.modalOverlay}>
-          <div onClick={() => setPaidCycleModalOpen(false)} style={styles.modalBackdrop} />
-          <div style={styles.modalSheet}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: spacing.lg }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800, margin: 0 }}>Ciclo pagado</p>
-                <p style={{ color: colors.textSecondary, fontSize: fontSize.sm, marginTop: 4, marginBottom: 0 }}>
-                  {formatShort(paidCycle.start_date)} – {formatShort(paidCycle.end_date)} · total {formatMoney(paidCycle.total_amount)}
-                </p>
-              </div>
-              <Pressable
-                onClick={() => setPaidCycleModalOpen(false)}
-                style={{ width: 32, height: 32, borderRadius: 16, background: colors.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-              >
-                <Icon name="close" size={18} color={colors.textPrimary} />
-              </Pressable>
+      {/* Último ciclo pagado */}
+      {paidCycle ? (
+        <Pressable onClick={openPaidCycleModal} style={styles.card}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            <IconCircle name="checkmark-circle" bg={colors.accentMuted} color={colors.accent} size={36} />
+            <div style={{ flex: 1, marginLeft: spacing.md }}>
+              <p style={{ color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 700, margin: 0 }}>
+                Último ciclo pagado
+              </p>
+              <p style={{ color: colors.textMuted, fontSize: fontSize.xs, margin: '2px 0 0' }}>
+                Corte {formatShort(paidCycle.end_date)} · {formatMoney(paidCycle.total_amount)}
+              </p>
             </div>
-
-            {paidCycleTransactions === null ? (
-              <p style={{ color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', padding: `${spacing.xl}px 0` }}>Cargando consumos…</p>
-            ) : paidCycleTransactions.length === 0 ? (
-              <p style={{ color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', padding: `${spacing.xl}px 0` }}>No hay consumos registrados para este ciclo.</p>
-            ) : (
-              renderTxnGroups(groupedPaidCycleTransactions, false)
-            )}
+            <Icon name="chevron-forward" size={16} color={colors.textSecondary} />
           </div>
+        </Pressable>
+      ) : null}
+
+      {/* Meses sin intereses */}
+      {detail && detail.installment_plans.length > 0 ? (
+        <div style={{ marginTop: spacing.xl }}>
+          <p style={styles.sectionHeader}>Planes a meses sin intereses</p>
+          {detail.installment_plans.map((p) => {
+            const progress = Math.min(100, Math.round((p.months_paid / p.months_total) * 100));
+            return (
+              <div key={p.id} style={styles.planCard}>
+                <div style={styles.planHeader}>
+                  <p style={styles.planDesc}>{p.description}</p>
+                  <span style={styles.planMonthly}>{formatMoney(p.monthly_amount)}/mes</span>
+                </div>
+                <div style={styles.planMeta}>
+                  <span style={styles.planMetaText}>
+                    {p.months_paid} de {p.months_total} meses pagados
+                  </span>
+                  <span style={styles.planMetaText}>Total: {formatMoney(p.total_amount)}</span>
+                </div>
+                <ProgressBar percent={progress} color={colors.accent} />
+              </div>
+            );
+          })}
         </div>
+      ) : null}
+
+      {/* Modal ciclo actual */}
+      {currentCycleModalOpen ? (
+        <Portal>
+          <div style={styles.modalOverlay}>
+            <div style={{ ...styles.modalSheet, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+              <div style={styles.modalHeader}>
+                <div>
+                  <p style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800, margin: 0 }}>
+                    Compras de este ciclo
+                  </p>
+                  {cycle ? (
+                    <p style={{ color: colors.textMuted, fontSize: fontSize.xs, margin: '2px 0 0' }}>
+                      {formatShort(cycle.start_date)} – {formatShort(cycle.end_date)}
+                    </p>
+                  ) : null}
+                </div>
+                <Pressable
+                  onClick={() => setCurrentCycleModalOpen(false)}
+                  style={{ width: 32, height: 32, borderRadius: 16, background: colors.surfaceAlt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Icon name="close" size={16} color={colors.textSecondary} />
+                </Pressable>
+              </div>
+              <div style={{ overflowY: 'auto', padding: spacing.lg, flex: 1 }}>
+                {groupedByDay.length === 0 ? (
+                  <p style={{ color: colors.textMuted, textAlign: 'center', margin: '32px 0' }}>
+                    Sin compras en este ciclo todavía.
+                  </p>
+                ) : (
+                  renderTxnGroups(groupedByDay, true)
+                )}
+              </div>
+            </div>
+          </div>
         </Portal>
       ) : null}
 
-      {currentCycleModalOpen ? (
+      {/* Modal ciclo pagado */}
+      {paidCycleModalOpen ? (
         <Portal>
-        <div style={styles.modalOverlay}>
-          <div onClick={() => setCurrentCycleModalOpen(false)} style={styles.modalBackdrop} />
-          <div style={styles.modalSheet}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: spacing.lg }}>
-              <div style={{ flex: 1 }}>
-                <p style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800, margin: 0 }}>Ciclo actual</p>
-                {cycle ? (
-                  <p style={{ color: colors.textSecondary, fontSize: fontSize.sm, marginTop: 4, marginBottom: 0 }}>
-                    {formatShort(cycle.start_date)} – {formatShort(cycle.end_date)} · acumulado {formatMoney(cycle.total_amount)} · se paga el{' '}
-                    {formatShort(cycle.due_date)}
+          <div style={styles.modalOverlay}>
+            <div style={{ ...styles.modalSheet, maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+              <div style={styles.modalHeader}>
+                <div>
+                  <p style={{ color: colors.textPrimary, fontSize: fontSize.lg, fontWeight: 800, margin: 0 }}>
+                    Ciclo pagado
                   </p>
-                ) : null}
+                  {paidCycle ? (
+                    <p style={{ color: colors.textMuted, fontSize: fontSize.xs, margin: '2px 0 0' }}>
+                      Corte {formatShort(paidCycle.end_date)} · Total {formatMoney(paidCycle.total_amount)}
+                    </p>
+                  ) : null}
+                </div>
+                <Pressable
+                  onClick={() => setPaidCycleModalOpen(false)}
+                  style={{ width: 32, height: 32, borderRadius: 16, background: colors.surfaceAlt, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                >
+                  <Icon name="close" size={16} color={colors.textSecondary} />
+                </Pressable>
               </div>
-              <Pressable
-                onClick={() => setCurrentCycleModalOpen(false)}
-                style={{ width: 32, height: 32, borderRadius: 16, background: colors.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-              >
-                <Icon name="close" size={18} color={colors.textPrimary} />
-              </Pressable>
+              <div style={{ overflowY: 'auto', padding: spacing.lg, flex: 1 }}>
+                {groupedPaidCycleTransactions.length === 0 ? (
+                  <p style={{ color: colors.textMuted, textAlign: 'center', margin: '32px 0' }}>
+                    Sin detalle disponible para este ciclo.
+                  </p>
+                ) : (
+                  renderTxnGroups(groupedPaidCycleTransactions, false)
+                )}
+              </div>
             </div>
-
-            {groupedByDay.length === 0 ? (
-              <p style={{ color: colors.textMuted, fontSize: fontSize.sm, textAlign: 'center', padding: `${spacing.xl}px 0` }}>No hay consumos registrados para este ciclo.</p>
-            ) : (
-              renderTxnGroups(groupedByDay, true)
-            )}
           </div>
-        </div>
         </Portal>
       ) : null}
     </PageShell>
   );
+}
+
+function cycleTransactionsCount(groups: [string, Transaction[]][]) {
+  return groups.reduce((acc, [, txns]) => acc + txns.length, 0);
 }

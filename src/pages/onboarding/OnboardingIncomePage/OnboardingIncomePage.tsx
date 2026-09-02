@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { PrimaryButton, TextLinkButton } from '../../../components/Buttons';
 import { AmountInput } from '../../../components/AmountInput';
@@ -8,12 +7,8 @@ import { ErrorBanner } from '../../../components/Misc';
 import { Icon } from '../../../components/Icon';
 import { Pressable } from '../../../components/Pressable';
 import { colors, fontSize, radius, spacing } from '../../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../../store';
-import { createIncomeThunk } from '../../../store/slices/incomesSlice';
-import { fetchAccountsThunk } from '../../../store/slices/accountsSlice';
-import { PaymentDay } from '../../../types';
-import { PaymentDayState, resolvePaymentDayValue } from '../../../utils/paymentDay';
 import { dynamicStyles, styles } from './OnboardingIncomePage.styles';
+import { useOnboardingIncomePage } from './OnboardingIncomePage.hooks';
 
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -30,49 +25,23 @@ function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) =>
 }
 
 export default function OnboardingIncomePage() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const accounts = useAppSelector((s) => s.accounts.items);
-  const error = useAppSelector((s) => s.incomes.error);
-  const [amount, setAmount] = useState('');
-  const [firstDayState, setFirstDayState] = useState<PaymentDayState>({ mode: 'day', dayText: '15', isLastDay: false, adjustWeekend: false });
-  const [hasSecondPayment, setHasSecondPayment] = useState(true);
-  const [secondDayState, setSecondDayState] = useState<PaymentDayState>({ mode: 'day', dayText: '', isLastDay: true, adjustWeekend: false });
-  const [saving, setSaving] = useState(false);
-
-  const firstDayValue = resolvePaymentDayValue(firstDayState);
-  const secondDayValue = resolvePaymentDayValue(secondDayState);
-  const firstDayValid = firstDayValue !== null;
-  const secondDayValid = !hasSecondPayment || secondDayValue !== null;
-
-  const paymentDays: PaymentDay[] =
-    firstDayValue !== null ? (hasSecondPayment && secondDayValue !== null ? [firstDayValue, secondDayValue] : [firstDayValue]) : [];
-  const frequency = hasSecondPayment ? 'BIWEEKLY' : 'MONTHLY';
-
-  const canFinish = Number(amount) > 0 && accounts.length > 0 && firstDayValid && secondDayValid;
-
-  const finish = async () => {
-    setSaving(true);
-    try {
-      if (canFinish) {
-        await dispatch(
-          createIncomeThunk({
-            name: 'Ingreso principal',
-            amount,
-            frequency,
-            payment_days: paymentDays,
-            account_id: accounts[0].id,
-          })
-        ).unwrap();
-      }
-      await dispatch(fetchAccountsThunk()).unwrap();
-      navigate('/');
-    } catch {
-      // el error ya se muestra desde el slice
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    navigate,
+    accounts,
+    error,
+    amount,
+    firstDayState,
+    hasSecondPayment,
+    secondDayState,
+    saving,
+    canFinish,
+    setAmount,
+    setFirstDayState,
+    setHasSecondPayment,
+    setSecondDayState,
+    finish,
+    handleSkip,
+  } = useOnboardingIncomePage();
 
   return (
     <PageShell contentStyle={styles.content}>
@@ -84,7 +53,7 @@ export default function OnboardingIncomePage() {
           <div style={styles.progressBar}>
             <div style={styles.progressFill} />
           </div>
-          <TextLinkButton label="Saltar" onPress={() => navigate('/')} style={styles.skipBtn} />
+          <TextLinkButton label="Saltar" onPress={handleSkip} style={styles.skipBtn} />
         </div>
 
         <h1 style={styles.title}>

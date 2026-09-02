@@ -112,4 +112,9 @@ export const dynamicStyles = {
     borderRadius: radius.pill,
     background: active ? colors.accent : colors.surface,
   }),
+  accountChipText: (active: boolean): React.CSSProperties => ({
+    color: active ? colors.black : colors.textSecondary,
+    fontSize: fontSize.sm,
+    fontWeight: 600,
+  }),
 };

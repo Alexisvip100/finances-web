@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { PageShell } from '../../components/PageShell';
 import { Pressable } from '../../components/Pressable';
 import { Icon } from '../../components/Icon';
@@ -9,93 +8,48 @@ import { AmountInput } from '../../components/AmountInput';
 import { ErrorBanner } from '../../components/Misc';
 import { TextField } from '../../components/TextField';
 import { colors, categoryIcons } from '../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../store';
-import { fetchAccountsThunk } from '../../store/slices/accountsSlice';
-import { fetchCardsThunk } from '../../store/slices/cardsSlice';
-import { fetchCategoriesThunk, createCategoryThunk } from '../../store/slices/categoriesSlice';
-import { createTransactionThunk } from '../../store/slices/transactionsSlice';
-import { pushToast } from '../../notifications/toastBus';
-import { previewCycleBounds } from '../../utils/cycleHelpers';
-import { formatMoney } from '../../utils/currency';
-import { formatShort, parseISODate, todayISO, toISODate } from '../../utils/dateHelpers';
+import { formatShort, todayISO, toISODate } from '../../utils/dateHelpers';
 import { DateSheetPicker } from '../../components/DateSheetPicker';
 import { accountLabel, cardLabel } from '../../utils/labels';
 import { dynamicStyles, styles } from './AddExpensePage.styles';
+import { useAddExpensePage } from './AddExpensePage.hooks';
 
-type MethodSelection = { kind: 'account'; id: number } | { kind: 'card'; id: number } | null;
 
 export default function AddExpensePage() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const accounts = useAppSelector((s) => s.accounts.items);
-  const cards = useAppSelector((s) => s.cards.items);
-  const categories = useAppSelector((s) => s.categories.items);
-  const error = useAppSelector((s) => s.transactions.error);
 
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [method, setMethod] = useState<MethodSelection>(null);
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
-  const [isMsi, setIsMsi] = useState(false);
-  const [months, setMonths] = useState('3');
-  const [saving, setSaving] = useState(false);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [customDate, setCustomDate] = useState(todayISO());
-
-  useEffect(() => {
-    dispatch(fetchAccountsThunk());
-    dispatch(fetchCardsThunk());
-    dispatch(fetchCategoriesThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (!method && accounts.length > 0) setMethod({ kind: 'account', id: accounts[0].id });
-  }, [accounts, method]);
-
-  const selectedCard = method?.kind === 'card' ? cards.find((c) => c.id === method.id) : undefined;
-  const selectedCategory = categories.find((c) => c.id === categoryId) ?? null;
-
-  const preview = useMemo(() => {
-    if (!selectedCard || customDate.length !== 10) return null;
-    return previewCycleBounds(selectedCard.statement_day, selectedCard.payment_term_days, parseISODate(customDate));
-  }, [selectedCard, customDate]);
-
-  const canSave = Number(amount) > 0 && method !== null && description.trim().length > 0 && customDate.length === 10;
-
-  const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
-    const created = await dispatch(createCategoryThunk({ name: newCategoryName.trim() })).unwrap();
-    setCategoryId(created.id);
-    setNewCategoryName('');
-  };
-
-  const handleSave = async () => {
-    if (!canSave || !method) return;
-    setSaving(true);
-    try {
-      await dispatch(
-        createTransactionThunk({
-          amount,
-          category_id: categoryId ?? undefined,
-          description: description.trim(),
-          transaction_date: customDate,
-          payment_method: method.kind === 'card' ? 'CREDIT' : 'DEBIT',
-          account_id: method.kind === 'account' ? method.id : undefined,
-          credit_card_id: method.kind === 'card' ? method.id : undefined,
-          installment_months: method.kind === 'card' && isMsi ? Number(months) : undefined,
-        })
-      ).unwrap();
-      pushToast({ kind: 'success', title: 'Compra registrada', message: `${formatMoney(amount)} · ${formatShort(customDate)}` });
-      navigate(-1);
-    } catch {
-      // el error ya se muestra desde el slice
-    } finally {
-      setSaving(false);
-    }
-  };
-
+  const {
+    amount,
+    description,
+    method,
+    categoryId,
+    categoryPickerOpen,
+    newCategoryName,
+    isMsi,
+    months,
+    saving,
+    datePickerOpen,
+    customDate,
+    navigate,
+    setAmount,
+    setDescription,
+    setMethod,
+    setCategoryId,
+    setCategoryPickerOpen,
+    setNewCategoryName,
+    setIsMsi,
+    setMonths,
+    setDatePickerOpen,
+    setCustomDate,
+    handleAddCategory,
+    handleSave,
+    selectedCard,
+    selectedCategory,
+    preview,
+    canSave,
+    accounts,
+    cards,
+    categories,
+    error, } = useAddExpensePage()
   return (
     <PageShell contentStyle={styles.pageContent}>
       <div style={styles.handleBar} />
@@ -190,68 +144,68 @@ export default function AddExpensePage() {
 
       {categoryPickerOpen ? (
         <Portal>
-        <div style={styles.modalBackdrop}>
-          <div onClick={() => setCategoryPickerOpen(false)} style={styles.modalOverlay} />
-          <div style={styles.modalSheet}>
-            <div style={styles.modalHeader}>
-              <p style={styles.modalTitle}>Seleccionar categoría</p>
-              <Pressable onClick={() => setCategoryPickerOpen(false)} style={{ padding: 4 }}>
-                <Icon name="close" size={18} color={colors.textSecondary} />
-              </Pressable>
-            </div>
+          <div style={styles.modalBackdrop}>
+            <div onClick={() => setCategoryPickerOpen(false)} style={styles.modalOverlay} />
+            <div style={styles.modalSheet}>
+              <div style={styles.modalHeader}>
+                <p style={styles.modalTitle}>Seleccionar categoría</p>
+                <Pressable onClick={() => setCategoryPickerOpen(false)} style={{ padding: 4 }}>
+                  <Icon name="close" size={18} color={colors.textSecondary} />
+                </Pressable>
+              </div>
 
-            <div style={styles.modalList}>
-              <Pressable
-                onClick={() => {
-                  setCategoryId(null);
-                  setCategoryPickerOpen(false);
-                }}
-                style={styles.modalRow}
-              >
-                <span style={styles.modalRowLabel}>Sin categoría</span>
-                {categoryId === null ? <Icon name="checkmark" size={16} color={colors.accent} /> : null}
-              </Pressable>
-
-              {categories.map((c) => (
+              <div style={styles.modalList}>
                 <Pressable
-                  key={c.id}
                   onClick={() => {
-                    setCategoryId(c.id);
+                    setCategoryId(null);
                     setCategoryPickerOpen(false);
                   }}
                   style={styles.modalRow}
                 >
-                  <Icon
-                    name={categoryIcons[c.name] ?? 'pricetag-outline'}
-                    size={16}
-                    color={colors.textSecondary}
-                    style={{ marginRight: 8 }}
-                  />
-                  <span style={styles.modalRowLabel}>{c.name}</span>
-                  {categoryId === c.id ? <Icon name="checkmark" size={16} color={colors.accent} /> : null}
+                  <span style={styles.modalRowLabel}>Sin categoría</span>
+                  {categoryId === null ? <Icon name="checkmark" size={16} color={colors.accent} /> : null}
                 </Pressable>
-              ))}
-            </div>
 
-            <div style={styles.modalInputRow}>
-              <input
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="Nueva categoría…"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleAddCategory();
-                }}
-                style={styles.modalInput}
-              />
-              <Pressable
-                onClick={handleAddCategory}
-                style={styles.modalAddBtn}
-              >
-                <Icon name="add" size={18} color={colors.black} />
-              </Pressable>
+                {categories.map((c) => (
+                  <Pressable
+                    key={c.id}
+                    onClick={() => {
+                      setCategoryId(c.id);
+                      setCategoryPickerOpen(false);
+                    }}
+                    style={styles.modalRow}
+                  >
+                    <Icon
+                      name={categoryIcons[c.name] ?? 'pricetag-outline'}
+                      size={16}
+                      color={colors.textSecondary}
+                      style={{ marginRight: 8 }}
+                    />
+                    <span style={styles.modalRowLabel}>{c.name}</span>
+                    {categoryId === c.id ? <Icon name="checkmark" size={16} color={colors.accent} /> : null}
+                  </Pressable>
+                ))}
+              </div>
+
+              <div style={styles.modalInputRow}>
+                <input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Nueva categoría…"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleAddCategory();
+                  }}
+                  style={styles.modalInput}
+                />
+                <Pressable
+                  onClick={handleAddCategory}
+                  style={styles.modalAddBtn}
+                >
+                  <Icon name="add" size={18} color={colors.black} />
+                </Pressable>
+              </div>
             </div>
           </div>
-        </div>
         </Portal>
       ) : null}
 

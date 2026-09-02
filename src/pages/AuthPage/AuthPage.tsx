@@ -1,29 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { PageShell } from '../../components/PageShell';
 import { PrimaryButton, TextLinkButton } from '../../components/Buttons';
 import { ErrorBanner } from '../../components/Misc';
 import { TextField } from '../../components/TextField';
-import { useAppDispatch, useAppSelector } from '../../store';
-import { loginThunk, registerThunk } from '../../store/slices/authSlice';
 import { styles } from './AuthPage.styles';
+import { useAuthPage } from './AuthPage.hooks';
 
 export default function AuthPage() {
-  const dispatch = useAppDispatch();
-  const { status, error } = useAppSelector((s) => s.auth);
-  const [mode, setMode] = useState<'login' | 'register'>('register');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-
-  const canSubmit = email.includes('@') && password.length >= 8;
-
-  const submit = () => {
-    if (!canSubmit) return;
-    if (mode === 'register') {
-      dispatch(registerThunk({ email, password }));
-    } else {
-      dispatch(loginThunk({ email, password }));
-    }
-  };
+  const {
+    mode,
+    email,
+    password,
+    canSubmit,
+    status,
+    error,
+    setEmail,
+    setPassword,
+    toggleMode,
+    submit,
+  } = useAuthPage();
 
   return (
     <PageShell contentStyle={styles.pageContent}>
@@ -58,7 +53,7 @@ export default function AuthPage() {
       </form>
       <TextLinkButton
         label={mode === 'register' ? 'Ya tengo cuenta' : 'Crear una cuenta nueva'}
-        onPress={() => setMode(mode === 'register' ? 'login' : 'register')}
+        onPress={toggleMode}
       />
     </PageShell>
   );

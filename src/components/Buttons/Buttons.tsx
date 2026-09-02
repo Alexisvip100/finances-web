@@ -1,15 +1,9 @@
-import React from 'react';
 import { colors } from '../../theme/theme';
 import { Pressable } from '../Pressable';
 import { styles } from './Buttons.styles';
+import type { BtnProps } from './Button.types';
 
-interface BtnProps {
-  label: string;
-  onPress?: () => void;
-  disabled?: boolean;
-  loading?: boolean;
-  style?: React.CSSProperties;
-}
+
 
 export function PrimaryButton({ label, onPress, disabled, loading, style }: BtnProps) {
   return (
