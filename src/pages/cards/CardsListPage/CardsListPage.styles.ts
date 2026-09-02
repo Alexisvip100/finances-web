@@ -1,0 +1,110 @@
+import React from 'react';
+import { colors, fontSize, radius, spacing } from '../../../theme/theme';
+
+export const styles: Record<string, React.CSSProperties> = {
+  headerRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.lg,
+  },
+  headerTitle: {
+    color: colors.textPrimary,
+    fontSize: fontSize.xxl,
+    fontWeight: 800,
+    margin: 0,
+  },
+  metricsRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  sectionLabel: {
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    fontWeight: 800,
+    letterSpacing: 0.6,
+    marginBottom: spacing.md,
+    marginTop: 0,
+  },
+  cardHeader: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardName: {
+    color: colors.textPrimary,
+    fontSize: fontSize.md,
+    fontWeight: 700,
+    margin: 0,
+  },
+  cardMeta: {
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    marginTop: 2,
+    marginBottom: 0,
+  },
+  paidBadge: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    background: colors.accentMuted,
+    borderRadius: radius.pill,
+    padding: `4px ${spacing.sm}px`,
+    gap: 4,
+  },
+  paidBadgeLabel: {
+    color: colors.accent,
+    fontSize: fontSize.xs,
+    fontWeight: 700,
+  },
+  divider: {
+    height: 1,
+    background: colors.divider,
+    marginTop: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  pendingHeader: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.lg,
+  },
+  pendingLabel: {
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    fontWeight: 700,
+    letterSpacing: 0.5,
+    marginBottom: 4,
+    marginTop: 0,
+  },
+  pendingAmount: {
+    color: colors.textPrimary,
+    fontSize: fontSize.xl,
+    fontWeight: 800,
+    margin: 0,
+  },
+  pendingDueBadge: {
+    background: colors.dangerMuted,
+    borderRadius: radius.pill,
+    padding: `${spacing.xs}px ${spacing.md}px`,
+  },
+  allocatedRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
+  addCardBtn: {
+    border: `1px dashed ${colors.divider}`,
+    borderRadius: radius.card,
+    padding: spacing.lg,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.sm,
+    width: '100%',
+  },
+};
