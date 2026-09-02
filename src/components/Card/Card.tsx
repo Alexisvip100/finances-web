@@ -1,12 +1,9 @@
 import React from 'react';
 import { Pressable } from '../Pressable';
 import { styles } from './Card.styles';
+import type { Props } from './Card.types';
 
-interface Props {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-  onPress?: () => void;
-}
+
 
 export function Card({ children, style, onPress }: Props) {
   if (onPress) {

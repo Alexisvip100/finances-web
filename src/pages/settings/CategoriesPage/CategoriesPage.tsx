@@ -1,61 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { TopBar } from '../../../components/TopBar';
 import { Pressable } from '../../../components/Pressable';
 import { Icon } from '../../../components/Icon';
 import { ErrorBanner, IconCircle } from '../../../components/Misc';
 import { colors, categoryIcons, fontSize } from '../../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../../store';
-import { createCategoryThunk, deleteCategoryThunk, fetchCategoriesThunk, updateCategoryThunk } from '../../../store/slices/categoriesSlice';
 import { formatMoney } from '../../../utils/currency';
 import { plainInputStyle, styles } from './CategoriesPage.styles';
+import { useCategoriesPage } from './CategoriesPage.hooks';
 
 export default function CategoriesPage() {
-  const dispatch = useAppDispatch();
-  const { items, error } = useAppSelector((s) => s.categories);
-  const [newName, setNewName] = useState('');
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingName, setEditingName] = useState('');
-  const [editingLimit, setEditingLimit] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    dispatch(fetchCategoriesThunk());
-  }, [dispatch]);
-
-  const handleAdd = async () => {
-    if (!newName.trim()) return;
-    await dispatch(createCategoryThunk({ name: newName.trim() }));
-    setNewName('');
-  };
-
-  const startEdit = (id: number, name: string, currentLimit: string | null) => {
-    setEditingId(id);
-    setEditingName(name);
-    setEditingLimit(currentLimit ?? '');
-  };
-
-  const cancelEdit = () => setEditingId(null);
-
-  const saveEdit = async () => {
-    if (editingId === null || !editingName.trim()) return;
-    setSaving(true);
-    try {
-      await dispatch(
-        updateCategoryThunk({ id: editingId, payload: { name: editingName.trim(), monthly_limit: editingLimit || undefined } })
-      ).unwrap();
-      setEditingId(null);
-    } catch {
-      // el error ya se muestra desde el banner de arriba
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    items,
+    error,
+    newName,
+    editingId,
+    editingName,
+    editingLimit,
+    saving,
+    setNewName,
+    setEditingName,
+    setEditingLimit,
+    handleAdd,
+    startEdit,
+    cancelEdit,
+    saveEdit,
+    handleDelete,
+    refresh,
+  } = useCategoriesPage();
 
   return (
     <PageShell>
       <TopBar title="Categorías y límites" />
-      {error ? <ErrorBanner message={error} onRetry={() => dispatch(fetchCategoriesThunk())} /> : null}
+      {error ? <ErrorBanner message={error} onRetry={refresh} /> : null}
 
       {items.map((c) => {
         const isEditing = editingId === c.id;
@@ -114,7 +91,7 @@ export default function CategoriesPage() {
                 <Pressable onClick={() => startEdit(c.id, c.name, c.monthly_limit ?? null)} style={styles.actionIconBtn}>
                   <Icon name="pencil-outline" size={16} color={colors.textSecondary} />
                 </Pressable>
-                <Pressable onClick={() => dispatch(deleteCategoryThunk(c.id))} style={styles.actionIconBtn}>
+                <Pressable onClick={() => handleDelete(c.id)} style={styles.actionIconBtn}>
                   <Icon name="trash-outline" size={16} color={colors.danger} />
                 </Pressable>
               </>

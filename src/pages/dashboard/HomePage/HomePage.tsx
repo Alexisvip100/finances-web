@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { Card } from '../../../components/Card';
 import { Badge, EmptyState, ErrorBanner, IconCircle } from '../../../components/Misc';
@@ -9,14 +8,11 @@ import { ProgressBar } from '../../../components/cards/ProgressBar';
 import { AddExpenseButton } from '../../../components/AddExpenseButton';
 import { Pressable } from '../../../components/Pressable';
 import { colors, fontSize, radius, spacing, categoryIcons } from '../../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../../store';
-import { fetchDashboardThunk } from '../../../store/slices/dashboardSlice';
-import { fetchCardsThunk } from '../../../store/slices/cardsSlice';
-import { fetchBudgetThunk } from '../../../store/slices/budgetSlice';
 import { formatMoney } from '../../../utils/currency';
 import { formatRelativeToToday, formatWeekdayShort, todayISO } from '../../../utils/dateHelpers';
 import { cardLabel } from '../../../utils/labels';
 import { dynamicStyles } from './HomePage.styles';
+import { useHomePage } from './HomePage.hooks';
 
 function iconForKind(kind: string): string {
   if (kind === 'card_due') return 'card-outline';
@@ -49,37 +45,16 @@ function BreakdownRow({
 }
 
 export default function HomePage() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const dashboard = useAppSelector((s) => s.dashboard);
-  const cards = useAppSelector((s) => s.cards.items);
-  const budget = useAppSelector((s) => s.budget);
-
-  const refresh = useCallback(() => {
-    dispatch(fetchDashboardThunk());
-    dispatch(fetchCardsThunk());
-    dispatch(fetchBudgetThunk(budget.month));
-  }, [dispatch, budget.month]);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  const data = dashboard.data;
-  const loadingDashboard = dashboard.status === 'loading' && !data;
-  const loadingBudget = budget.status === 'loading' && !budget.data;
-
-  const budgetTotals = budget.data?.categories.reduce(
-    (acc, c) => {
-      if (c.monthly_limit) {
-        acc.limit += Number(c.monthly_limit);
-        acc.spent += Number(c.spent);
-      }
-      return acc;
-    },
-    { limit: 0, spent: 0 }
-  );
-  const budgetPercent = budgetTotals && budgetTotals.limit > 0 ? Math.round((budgetTotals.spent / budgetTotals.limit) * 100) : null;
+  const {
+    navigate,
+    data,
+    cards,
+    error,
+    loadingDashboard,
+    loadingBudget,
+    budgetPercent,
+    refresh,
+  } = useHomePage();
 
   return (
     <PageShell>
@@ -93,7 +68,7 @@ export default function HomePage() {
         {formatWeekdayShort(todayISO())}
       </p>
 
-      {dashboard.error ? <ErrorBanner message={dashboard.error} onRetry={refresh} /> : null}
+      {error ? <ErrorBanner message={error} onRetry={refresh} /> : null}
 
       <Card style={{ marginBottom: spacing.xl }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm }}>

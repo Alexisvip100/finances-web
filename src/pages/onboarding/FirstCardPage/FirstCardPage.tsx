@@ -1,16 +1,13 @@
-import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { PrimaryButton, TextLinkButton } from '../../../components/Buttons';
 import { ErrorBanner } from '../../../components/Misc';
 import { Icon } from '../../../components/Icon';
 import { Pressable } from '../../../components/Pressable';
 import { colors, fontSize, radius, spacing } from '../../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../../store';
-import { createCardThunk } from '../../../store/slices/cardsSlice';
-import { previewCycleBounds } from '../../../utils/cycleHelpers';
 import { formatShort } from '../../../utils/dateHelpers';
 import { CARD_COLORS, dynamicStyles, styles } from './FirstCardPage.styles';
+import { useFirstCardPage } from './FirstCardPage.hooks';
 
 function toISO(d: Date): string {
   const y = d.getFullYear();
@@ -20,49 +17,29 @@ function toISO(d: Date): string {
 }
 
 export default function FirstCardPage() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { error } = useAppSelector((s) => s.cards);
-  const [name, setName] = useState('');
-  const [bank, setBank] = useState('');
-  const [lastFour, setLastFour] = useState('');
-  const [creditLimit, setCreditLimit] = useState('');
-  const [statementDay, setStatementDay] = useState('15');
-  const [paymentTermDays, setPaymentTermDays] = useState('20');
-  const [color, setColor] = useState(CARD_COLORS[0]);
-  const [saving, setSaving] = useState(false);
-
-  const preview = useMemo(() => {
-    const sd = Number(statementDay);
-    const term = Number(paymentTermDays);
-    if (!sd || !term) return null;
-    return previewCycleBounds(sd, term, new Date());
-  }, [statementDay, paymentTermDays]);
-
-  const canSave = name.trim() && bank.trim() && lastFour.length === 4 && Number(statementDay) >= 1 && Number(statementDay) <= 31;
-
-  const handleNext = async () => {
-    if (!canSave) return;
-    setSaving(true);
-    try {
-      await dispatch(
-        createCardThunk({
-          name: name.trim(),
-          bank: bank.trim(),
-          last_four: lastFour,
-          credit_limit: creditLimit || '0',
-          statement_day: Number(statementDay),
-          payment_term_days: Number(paymentTermDays),
-          color,
-        })
-      ).unwrap();
-      navigate('/onboarding/ingreso');
-    } catch {
-      // el error ya se muestra desde el slice
-    } finally {
-      setSaving(false);
-    }
-  };
+  const {
+    navigate,
+    name,
+    bank,
+    lastFour,
+    creditLimit,
+    statementDay,
+    paymentTermDays,
+    color,
+    saving,
+    error,
+    preview,
+    canSave,
+    setName,
+    setBank,
+    setLastFour,
+    setCreditLimit,
+    setStatementDay,
+    setPaymentTermDays,
+    setColor,
+    handleNext,
+    handleSkip,
+  } = useFirstCardPage();
 
   return (
     <PageShell contentStyle={styles.content}>
@@ -74,7 +51,7 @@ export default function FirstCardPage() {
           <div style={styles.progressBar}>
             <div style={styles.progressFill} />
           </div>
-          <TextLinkButton label="Saltar" onPress={() => navigate('/onboarding/ingreso')} style={styles.skipBtn} />
+          <TextLinkButton label="Saltar" onPress={handleSkip} style={styles.skipBtn} />
         </div>
 
         <h1 style={styles.title}>

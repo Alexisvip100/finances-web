@@ -1,11 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { PageShell } from '../../../components/PageShell';
 import { PrimaryButton, TextLinkButton } from '../../../components/Buttons';
 import { styles } from './ConceptPage.styles';
+import { useConceptPage } from './ConceptPage.hooks';
 
 export default function ConceptPage() {
-  const navigate = useNavigate();
+  const { handleNext, handleSkip } = useConceptPage();
 
   return (
     <PageShell contentStyle={styles.content}>
@@ -13,7 +13,7 @@ export default function ConceptPage() {
         <div style={styles.progressBar}>
           <div style={styles.progressFill} />
         </div>
-        <TextLinkButton label="Saltar" onPress={() => navigate('/')} style={styles.skipBtn} />
+        <TextLinkButton label="Saltar" onPress={handleSkip} style={styles.skipBtn} />
       </div>
 
       <h1 style={styles.title}>
@@ -46,7 +46,7 @@ export default function ConceptPage() {
 
       <div style={{ flex: 1 }} />
 
-      <PrimaryButton label="Entendido" onPress={() => navigate('/onboarding/cuentas')} />
+      <PrimaryButton label="Entendido" onPress={handleNext} />
     </PageShell>
   );
 }

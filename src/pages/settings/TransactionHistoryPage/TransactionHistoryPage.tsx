@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { TopBar } from '../../../components/TopBar';
 import { EmptyState, ErrorBanner, IconCircle } from '../../../components/Misc';
@@ -7,228 +6,108 @@ import { Icon } from '../../../components/Icon';
 import { Portal } from '../../../components/Portal';
 import { Pressable } from '../../../components/Pressable';
 import { colors, categoryIcons, spacing } from '../../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../../store';
-import { deleteTransactionThunk, fetchTransactionsThunk, payFixedExpenseThunk } from '../../../store/slices/transactionsSlice';
-import { fetchCategoriesThunk } from '../../../store/slices/categoriesSlice';
-import { fetchAccountsThunk } from '../../../store/slices/accountsSlice';
-import { fetchCardsThunk } from '../../../store/slices/cardsSlice';
-import { fetchFixedExpensesThunk } from '../../../store/slices/fixedExpensesSlice';
-import * as transactionsApi from '../../../api/transactions';
-import * as fixedExpensesApi from '../../../api/fixedExpenses';
-import { PaymentMethod, Transaction } from '../../../types';
 import { formatMoney } from '../../../utils/currency';
-import {
-  endOfWeek,
-  formatRangeShort,
-  formatShort,
-  formatWeekdayShort,
-  lastDayOfMonth,
-  monthKeyLabel,
-  shiftDate,
-  shiftMonthKey,
-  startOfWeek,
-  todayISO,
-} from '../../../utils/dateHelpers';
+import { formatShort } from '../../../utils/dateHelpers';
 import { accountLabel, cardLabel } from '../../../utils/labels';
 import { styles } from './TransactionHistoryPage.styles';
-
-type SourceFilter = { kind: 'account' | 'card'; id: number } | null;
-
-const METHOD_OPTIONS: { value: PaymentMethod | null; label: string }[] = [
-  { value: null, label: 'Todos' },
-  { value: 'CASH', label: 'Efectivo' },
-  { value: 'DEBIT', label: 'Débito' },
-  { value: 'CREDIT', label: 'Crédito' },
-];
+import { useTransactionHistoryPage } from './TransactionHistoryPage.hooks';
 
 export default function TransactionHistoryPage() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { items, status, error } = useAppSelector((s) => s.transactions);
-  const categories = useAppSelector((s) => s.categories.items);
-  const accounts = useAppSelector((s) => s.accounts.items);
-  const cards = useAppSelector((s) => s.cards.items);
-  const fixedExpenses = useAppSelector((s) => s.fixedExpenses.items);
-
-  const [granularity, setGranularity] = useState<'month' | 'week' | 'day'>('month');
-  const [anchorDate, setAnchorDate] = useState(todayISO());
-  const month = anchorDate.slice(0, 7);
-  const [categoryId, setCategoryId] = useState<number | null>(null);
-  const [categoryPickerOpen, setCategoryPickerOpen] = useState(false);
-  const [source, setSource] = useState<SourceFilter>(null);
-  const [method, setMethod] = useState<PaymentMethod | null>(null);
-  const [onlyFixed, setOnlyFixed] = useState(false);
-  const [paidFixedIds, setPaidFixedIds] = useState<Set<number>>(new Set());
-  const [markingPaidId, setMarkingPaidId] = useState<number | null>(null);
-
-  useEffect(() => {
-    dispatch(fetchCategoriesThunk());
-    dispatch(fetchAccountsThunk());
-    dispatch(fetchCardsThunk());
-    dispatch(fetchFixedExpensesThunk());
-  }, [dispatch]);
-
-  const monthBounds = useCallback(() => {
-    const [year, monthNum] = month.split('-').map(Number);
-    const lastDay = lastDayOfMonth(year, monthNum);
-    return { from_date: `${month}-01`, to_date: `${month}-${String(lastDay).padStart(2, '0')}` };
-  }, [month]);
-
-  const periodBounds = useCallback(() => {
-    if (granularity === 'day') return { from_date: anchorDate, to_date: anchorDate };
-    if (granularity === 'week') return { from_date: startOfWeek(anchorDate), to_date: endOfWeek(anchorDate) };
-    return monthBounds();
-  }, [granularity, anchorDate, monthBounds]);
-
-  const refresh = useCallback(() => {
-    dispatch(
-      fetchTransactionsThunk({
-        ...periodBounds(),
-        category_id: categoryId ?? undefined,
-        account_id: source?.kind === 'account' ? source.id : undefined,
-        credit_card_id: source?.kind === 'card' ? source.id : undefined,
-        payment_method: method ?? undefined,
-        only_fixed_expenses: onlyFixed || undefined,
-      })
-    );
-  }, [dispatch, periodBounds, categoryId, source, method, onlyFixed]);
-
-  const refreshFixedStatus = useCallback(() => {
-    transactionsApi
-      .fetchTransactions({ ...monthBounds(), only_fixed_expenses: true })
-      .then((txns) => setPaidFixedIds(new Set(txns.map((t) => t.fixed_expense_id).filter((id): id is number => id !== null))));
-  }, [monthBounds]);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  useEffect(() => {
-    refreshFixedStatus();
-  }, [refreshFixedStatus]);
-
-  const resolveDateInViewedMonth = (dayOfMonth: number) => {
-    const [year, monthNum] = month.split('-').map(Number);
-    const day = Math.min(dayOfMonth, lastDayOfMonth(year, monthNum));
-    return `${month}-${String(day).padStart(2, '0')}`;
-  };
-
-  const handleMarkPaid = async (fixed: fixedExpensesApi.FixedExpense) => {
-    setMarkingPaidId(fixed.id);
-    try {
-      await dispatch(
-        payFixedExpenseThunk({ id: fixed.id, transactionDate: resolveDateInViewedMonth(fixed.day_of_month) })
-      ).unwrap();
-      refreshFixedStatus();
-      refresh();
-    } catch {
-      // el error ya se muestra desde el banner de arriba (transactions.error)
-    } finally {
-      setMarkingPaidId(null);
-    }
-  };
-
-  const categoryById = useMemo(() => {
-    const map: Record<number, (typeof categories)[number]> = {};
-    categories.forEach((c) => (map[c.id] = c));
-    return map;
-  }, [categories]);
-
-  const sourceLabel = useCallback(
-    (t: Transaction) => {
-      if (t.credit_card_id) {
-        const card = cards.find((c) => c.id === t.credit_card_id);
-        return card ? `${cardLabel(card)} ••••${card.last_four}` : 'Tarjeta';
-      }
-      const account = accounts.find((a) => a.id === t.account_id);
-      return account?.name ?? 'Cuenta';
-    },
-    [cards, accounts]
-  );
-
-  const total = useMemo(() => items.reduce((sum, t) => sum + Number(t.amount), 0), [items]);
-
-  const groupedByDay = useMemo(() => {
-    const groups: Record<string, Transaction[]> = {};
-    items.forEach((t) => {
-      groups[t.transaction_date] = groups[t.transaction_date] ?? [];
-      groups[t.transaction_date].push(t);
-    });
-    return Object.entries(groups).sort((a, b) => (a[0] < b[0] ? 1 : -1));
-  }, [items]);
-
-  const changePeriod = (delta: number) => {
-    setAnchorDate((d) => {
-      if (granularity === 'day') return shiftDate(d, delta);
-      if (granularity === 'week') return shiftDate(d, delta * 7);
-      return `${shiftMonthKey(d.slice(0, 7), delta)}-01`;
-    });
-  };
-
-  const periodLabel =
-    granularity === 'day' ? formatWeekdayShort(anchorDate) : granularity === 'week' ? formatRangeShort(startOfWeek(anchorDate), endOfWeek(anchorDate)) : monthKeyLabel(month);
-
-  const activeFixedExpenses = useMemo(() => fixedExpenses.filter((f) => f.is_active), [fixedExpenses]);
-  const selectedCategory = categoryId !== null ? categoryById[categoryId] : undefined;
-  const debitAccounts = useMemo(() => accounts.filter((a) => a.type === 'DEBIT'), [accounts]);
-
-  const handleMethodChange = (m: PaymentMethod | null) => {
-    setMethod(m);
-    setSource(null);
-  };
-
-  const hasActiveFilters = categoryId !== null || source !== null || method !== null || onlyFixed;
+  const {
+    navigate,
+    categories,
+    cards,
+    activeFixedExpenses,
+    error,
+    granularity,
+    categoryId,
+    categoryPickerOpen,
+    source,
+    method,
+    onlyFixed,
+    paidFixedIds,
+    markingPaidId,
+    categoryById,
+    selectedCategory,
+    debitAccounts,
+    sourceLabel,
+    total,
+    groupedByDay,
+    periodLabel,
+    hasActiveFilters,
+    methodOptions,
+    setGranularity,
+    setCategoryId,
+    setCategoryPickerOpen,
+    setSource,
+    setOnlyFixed,
+    handleMethodChange,
+    changePeriod,
+    handleMarkPaid,
+    handleDeleteTxn,
+    refresh,
+  } = useTransactionHistoryPage();
 
   return (
     <PageShell contentStyle={{ paddingBottom: 140 }}>
-      <TopBar title="Historial de gastos" onBack={() => navigate(-1)} />
+      <TopBar title="Historial de compras" onBack={() => navigate(-1)} />
       {error ? <ErrorBanner message={error} onRetry={refresh} /> : null}
 
-      <div style={styles.chipsRow}>
-        <Chip label="Día" active={granularity === 'day'} onPress={() => setGranularity('day')} />
-        <Chip label="Semana" active={granularity === 'week'} onPress={() => setGranularity('week')} />
-        <Chip label="Mes" active={granularity === 'month'} onPress={() => setGranularity('month')} />
+      <div style={styles.segmentedRow}>
+        {(['month', 'week', 'day'] as const).map((g) => {
+          const active = granularity === g;
+          const label = g === 'month' ? 'Mes' : g === 'week' ? 'Semana' : 'Día';
+          return (
+            <Pressable
+              key={g}
+              onClick={() => setGranularity(g)}
+              style={{ ...styles.segmentBtn, ...(active ? styles.segmentBtnActive : {}) }}
+            >
+              <span style={{ ...styles.segmentLabel, ...(active ? styles.segmentLabelActive : {}) }}>{label}</span>
+            </Pressable>
+          );
+        })}
       </div>
 
-      <div style={styles.monthRow}>
-        <Pressable onClick={() => changePeriod(-1)} style={styles.monthArrow}>
+      <div style={styles.periodRow}>
+        <Pressable onClick={() => changePeriod(-1)} style={styles.periodArrow}>
           <Icon name="chevron-back" size={16} color={colors.textSecondary} />
         </Pressable>
-        <span style={styles.monthLabel}>{periodLabel}</span>
-        <Pressable onClick={() => changePeriod(1)} style={styles.monthArrow}>
+        <span style={styles.periodLabel}>{periodLabel}</span>
+        <Pressable onClick={() => changePeriod(1)} style={styles.periodArrow}>
           <Icon name="chevron-forward" size={16} color={colors.textSecondary} />
         </Pressable>
       </div>
 
       <div style={styles.totalCard}>
-        <span style={styles.totalLabel}>TOTAL {hasActiveFilters ? '(filtrado)' : ''}</span>
+        <span style={styles.totalLabel}>TOTAL DEL PERIODO</span>
         <span style={styles.totalValue}>{formatMoney(total)}</span>
-        <span style={styles.totalMeta}>{items.length} movimiento{items.length === 1 ? '' : 's'}</span>
+        {hasActiveFilters ? <span style={styles.totalMeta}>Con filtros aplicados</span> : null}
       </div>
 
-      {activeFixedExpenses.length > 0 ? (
+      {granularity === 'month' && activeFixedExpenses.length > 0 ? (
         <>
-          <p style={styles.filterLabel}>Gastos fijos de este mes</p>
-          {activeFixedExpenses.map((f) => {
-            const paid = paidFixedIds.has(f.id);
-            const category = categoryById[f.category_id];
+          <p style={styles.filterLabel}>Gastos fijos este mes</p>
+          {activeFixedExpenses.map((fixed) => {
+            const isPaid = paidFixedIds.has(fixed.id);
+            const isMarking = markingPaidId === fixed.id;
             return (
-              <div key={f.id} style={styles.fixedRow}>
-                <IconCircle name={categoryIcons[category?.name ?? ''] ?? 'repeat-outline'} bg={colors.surfaceAlt} color={colors.textSecondary} size={36} />
+              <div key={fixed.id} style={styles.fixedRow}>
+                <IconCircle name="calendar-outline" bg={colors.surfaceAlt} color={colors.textSecondary} size={36} />
                 <div style={{ flex: 1, marginLeft: spacing.md }}>
-                  <p style={styles.txnLabel}>{f.name}</p>
+                  <p style={styles.txnLabel}>{fixed.name}</p>
                   <p style={styles.txnMeta}>
-                    {formatMoney(f.amount)} · día {f.day_of_month}
+                    Día {fixed.day_of_month} · {formatMoney(fixed.amount)}
                   </p>
                 </div>
-                {paid ? (
+                {isPaid ? (
                   <div style={styles.paidBadge}>
                     <Icon name="checkmark-circle" size={14} color={colors.accent} />
                     <span style={styles.paidBadgeLabel}>Pagado</span>
                   </div>
                 ) : (
-                  <Pressable style={styles.payBtn} onClick={() => handleMarkPaid(f)} disabled={markingPaidId === f.id}>
-                    <span style={styles.payBtnLabel}>{markingPaidId === f.id ? 'Guardando…' : 'Marcar pagado'}</span>
+                  <Pressable style={styles.payBtn} onClick={() => handleMarkPaid(fixed)} disabled={isMarking}>
+                    <span style={styles.payBtnLabel}>{isMarking ? 'Guardando…' : 'Marcar pagado'}</span>
                   </Pressable>
                 )}
               </div>
@@ -237,65 +116,15 @@ export default function TransactionHistoryPage() {
         </>
       ) : null}
 
-      <p style={styles.filterLabel}>Tipo</p>
+      <p style={styles.filterLabel}>Filtrar por categoría</p>
       <div style={styles.chipsRow}>
-        <Chip label="Todos" active={!onlyFixed} onPress={() => setOnlyFixed(false)} />
-        <Chip label="Solo gastos fijos" active={onlyFixed} onPress={() => setOnlyFixed(true)} />
+        <Chip label={selectedCategory ? selectedCategory.name : 'Todas las categorías'} active={categoryId !== null} onPress={() => setCategoryPickerOpen(true)} />
+        {categoryId !== null ? <Chip label="Limpiar categoría" active={false} onPress={() => setCategoryId(null)} /> : null}
       </div>
 
-      <p style={styles.filterLabel}>Categoría</p>
-      <Pressable style={styles.selectRow} onClick={() => setCategoryPickerOpen(true)}>
-        <Icon
-          name={categoryIcons[selectedCategory?.name ?? ''] ?? 'apps-outline'}
-          size={16}
-          color={colors.textSecondary}
-          style={{ marginRight: spacing.sm }}
-        />
-        <span style={styles.selectLabel}>{selectedCategory ? selectedCategory.name : 'Todas'}</span>
-        <Icon name="chevron-down" size={16} color={colors.textMuted} />
-      </Pressable>
-
-      {categoryPickerOpen ? (
-        <Portal>
-        <>
-          <div style={styles.modalBackdrop} onClick={() => setCategoryPickerOpen(false)} />
-          <div style={styles.modalSheet}>
-            <p style={styles.modalTitle}>Categoría</p>
-            <div style={styles.modalList}>
-              <Pressable
-                style={styles.modalRow}
-                onClick={() => {
-                  setCategoryId(null);
-                  setCategoryPickerOpen(false);
-                }}
-              >
-                <Icon name="apps-outline" size={18} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
-                <span style={styles.modalRowLabel}>Todas</span>
-                {categoryId === null ? <Icon name="checkmark" size={18} color={colors.accent} /> : null}
-              </Pressable>
-              {categories.map((c) => (
-                <Pressable
-                  key={c.id}
-                  style={styles.modalRow}
-                  onClick={() => {
-                    setCategoryId(c.id);
-                    setCategoryPickerOpen(false);
-                  }}
-                >
-                  <Icon name={categoryIcons[c.name] ?? 'pricetag-outline'} size={18} color={colors.textSecondary} style={{ marginRight: spacing.md }} />
-                  <span style={styles.modalRowLabel}>{c.name}</span>
-                  {categoryId === c.id ? <Icon name="checkmark" size={18} color={colors.accent} /> : null}
-                </Pressable>
-              ))}
-            </div>
-          </div>
-        </>
-        </Portal>
-      ) : null}
-
-      <p style={styles.filterLabel}>Método de pago</p>
+      <p style={styles.filterLabel}>Filtrar por método</p>
       <div style={styles.chipsRow}>
-        {METHOD_OPTIONS.map((opt) => (
+        {methodOptions.map((opt) => (
           <Chip key={opt.label} label={opt.label} active={method === opt.value} onPress={() => handleMethodChange(opt.value)} />
         ))}
       </div>
@@ -307,7 +136,7 @@ export default function TransactionHistoryPage() {
             <Chip label="Todas" active={source === null} onPress={() => setSource(null)} />
             {debitAccounts.map((a) => (
               <Chip
-                key={`a-${a.id}`}
+                key={a.id}
                 label={accountLabel(a)}
                 active={source?.kind === 'account' && source.id === a.id}
                 onPress={() => setSource({ kind: 'account', id: a.id })}
@@ -324,7 +153,7 @@ export default function TransactionHistoryPage() {
             <Chip label="Todas" active={source === null} onPress={() => setSource(null)} />
             {cards.map((c) => (
               <Chip
-                key={`c-${c.id}`}
+                key={c.id}
                 label={`${cardLabel(c)} ••••${c.last_four}`}
                 active={source?.kind === 'card' && source.id === c.id}
                 onPress={() => setSource({ kind: 'card', id: c.id })}
@@ -334,42 +163,41 @@ export default function TransactionHistoryPage() {
         </>
       ) : null}
 
+      <div style={{ marginTop: spacing.md }}>
+        <Chip label={onlyFixed ? 'Solo gastos fijos (activo)' : 'Solo gastos fijos'} active={onlyFixed} onPress={() => setOnlyFixed((v) => !v)} />
+      </div>
+
       <div style={styles.divider} />
 
-      {groupedByDay.length === 0 && status !== 'loading' ? (
+      {groupedByDay.length === 0 ? (
         <EmptyState
           icon="receipt-outline"
-          title="Sin movimientos"
-          description="No hay gastos que coincidan con estos filtros en este mes."
+          title="Sin compras en este periodo"
+          description={hasActiveFilters ? 'No hay compras que coincidan con los filtros seleccionados.' : 'Registra tus gastos para verlos organizados aquí.'}
         />
       ) : (
         groupedByDay.map(([date, txns]) => (
           <div key={date} style={{ marginBottom: spacing.lg }}>
-            <div style={styles.dayHeaderContainer}>
-              <p style={styles.dayHeader}>{formatShort(date)}</p>
-              <div style={styles.dayTotal}>
-                <p style={styles.dayTotalLabel}>Total {formatMoney(txns.reduce((sum, t) => sum + Number(t.amount), 0))}</p>
-              </div>
-            </div>
+            <p style={styles.dayHeader}>{formatShort(date)}</p>
             {txns.map((t) => {
-              const category = t.category_id !== null ? categoryById[t.category_id] : undefined;
+              const cat = t.category_id !== null ? categoryById[t.category_id] : undefined;
               return (
                 <div key={t.id} style={styles.txnRow}>
                   <IconCircle
-                    name={categoryIcons[category?.name ?? ''] ?? 'file-tray-outline'}
+                    name={categoryIcons[cat?.name ?? ''] ?? 'file-tray-outline'}
                     bg={colors.surfaceAlt}
                     color={colors.textSecondary}
                     size={36}
                   />
                   <div style={{ flex: 1, marginLeft: spacing.md }}>
-                    <p style={styles.txnLabel}>{t.description || category?.name || 'Compra'}</p>
+                    <p style={styles.txnLabel}>{t.description || cat?.name || 'Compra'}</p>
                     <p style={styles.txnMeta}>
-                      {category?.name ?? '—'} · {sourceLabel(t)}
+                      {sourceLabel(t)}
                       {t.fixed_expense_id !== null ? ' · Fijo' : ''}
                     </p>
                   </div>
                   <span style={styles.txnValue}>{formatMoney(t.amount)}</span>
-                  <Pressable onClick={() => dispatch(deleteTransactionThunk(t.id))} style={styles.deleteBtn}>
+                  <Pressable onClick={() => handleDeleteTxn(t.id)} style={styles.deleteBtn}>
                     <Icon name="trash-outline" size={16} color={colors.danger} />
                   </Pressable>
                 </div>
@@ -378,6 +206,48 @@ export default function TransactionHistoryPage() {
           </div>
         ))
       )}
+
+      {categoryPickerOpen ? (
+        <Portal>
+          <div style={styles.modalBackdrop}>
+            <div onClick={() => setCategoryPickerOpen(false)} style={styles.modalOverlay} />
+            <div style={styles.modalSheet}>
+              <div style={styles.modalHeader}>
+                <p style={styles.modalTitle}>Filtrar por categoría</p>
+                <Pressable onClick={() => setCategoryPickerOpen(false)} style={{ padding: 4 }}>
+                  <Icon name="close" size={18} color={colors.textSecondary} />
+                </Pressable>
+              </div>
+              <div style={styles.modalList}>
+                <Pressable
+                  onClick={() => {
+                    setCategoryId(null);
+                    setCategoryPickerOpen(false);
+                  }}
+                  style={styles.modalRow}
+                >
+                  <span style={styles.modalRowLabel}>Todas</span>
+                  {categoryId === null ? <Icon name="checkmark" size={16} color={colors.accent} /> : null}
+                </Pressable>
+                {categories.map((c) => (
+                  <Pressable
+                    key={c.id}
+                    onClick={() => {
+                      setCategoryId(c.id);
+                      setCategoryPickerOpen(false);
+                    }}
+                    style={styles.modalRow}
+                  >
+                    <Icon name={categoryIcons[c.name] ?? 'pricetag-outline'} size={16} color={colors.textSecondary} style={{ marginRight: 8 }} />
+                    <span style={styles.modalRowLabel}>{c.name}</span>
+                    {categoryId === c.id ? <Icon name="checkmark" size={16} color={colors.accent} /> : null}
+                  </Pressable>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Portal>
+      ) : null}
     </PageShell>
   );
 }

@@ -1,0 +1,41 @@
+import type { NavigateFunction } from "react-router-dom";
+import type { Account, Category, CreditCard } from "../../types";
+import type { CycleBoundsPreview } from "../../utils/cycleHelpers";
+
+export type MethodSelection = { kind: 'account'; id: number } | { kind: 'card'; id: number } | null;
+
+export type AddExpensePageTypes = {
+    amount: string;
+    description: string;
+    method: MethodSelection;
+    categoryId: number | null;
+    categoryPickerOpen: boolean;
+    newCategoryName: string;
+    isMsi: boolean;
+    months: string;
+    saving: boolean;
+    datePickerOpen: boolean;
+    customDate: string;
+    navigate: NavigateFunction;
+    setAmount: (value: string) => void;
+    setDescription: (value: string) => void;
+    setMethod: (value: MethodSelection) => void;
+    setCategoryId: (value: number | null) => void;
+    setCategoryPickerOpen: (value: boolean) => void;
+    setNewCategoryName: (value: string) => void;
+    setIsMsi: (value: boolean) => void;
+    setMonths: (value: string) => void;
+    setSaving: (value: boolean) => void;
+    setDatePickerOpen: (value: boolean) => void;
+    setCustomDate: (value: string) => void;
+    handleAddCategory: () => Promise<void>;
+    handleSave: () => Promise<void>;
+    selectedCard: CreditCard | undefined;
+    selectedCategory: Category | null;
+    preview: CycleBoundsPreview | null;
+    canSave: boolean;
+    accounts: Account[];
+    cards: CreditCard[];
+    categories: Category[];
+    error: string | null;
+};

@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { Card } from '../../../components/Card';
 import { Pressable } from '../../../components/Pressable';
@@ -9,42 +8,23 @@ import { MetricCard } from '../../../components/cards/MetricCard';
 import { ProgressBar } from '../../../components/cards/ProgressBar';
 import { EmptyState, ErrorBanner, IconCircle } from '../../../components/Misc';
 import { colors, fontSize, spacing } from '../../../theme/theme';
-import { useAppDispatch, useAppSelector } from '../../../store';
-import { fetchCardDetailThunk, fetchCardsThunk } from '../../../store/slices/cardsSlice';
-import { fetchAccountsThunk } from '../../../store/slices/accountsSlice';
 import { formatMoney } from '../../../utils/currency';
 import { formatShort } from '../../../utils/dateHelpers';
 import { accountLabel, cardLabel } from '../../../utils/labels';
 import { styles } from './CardsListPage.styles';
+import { useCardsListPage } from './CardsListPage.hooks';
 
 export default function CardsListPage() {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { items, detailById, status, error } = useAppSelector((s) => s.cards);
-  const accounts = useAppSelector((s) => s.accounts.items);
-  const debitCards = accounts.filter((a) => a.type === 'DEBIT');
-
-  useEffect(() => {
-    dispatch(fetchCardsThunk());
-    dispatch(fetchAccountsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    items.forEach((c) => dispatch(fetchCardDetailThunk(c.id)));
-  }, [items, dispatch]);
-
-  const totals = useMemo(() => {
-    let committed = 0;
-    let allocated = 0;
-    items.forEach((c) => {
-      const detail = detailById[c.id];
-      if (detail?.pending_cycle) {
-        committed += Number(detail.pending_cycle.total_amount) - Number(detail.pending_cycle.paid_amount);
-      }
-      if (detail) allocated += Number(detail.allocated_for_pending_cycle);
-    });
-    return { committed, allocated };
-  }, [items, detailById]);
+  const {
+    navigate,
+    items,
+    detailById,
+    status,
+    error,
+    debitCards,
+    totals,
+    refresh,
+  } = useCardsListPage();
 
   return (
     <PageShell contentStyle={{ paddingBottom: 140 }}>
@@ -53,7 +33,7 @@ export default function CardsListPage() {
         <AddExpenseButton />
       </div>
 
-      {error ? <ErrorBanner message={error} onRetry={() => dispatch(fetchCardsThunk())} /> : null}
+      {error ? <ErrorBanner message={error} onRetry={refresh} /> : null}
 
       {items.length > 0 ? (
         <div style={styles.metricsRow}>
