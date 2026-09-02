@@ -28,7 +28,7 @@ export default function SettingsPage() {
   } = useSettingsPage();
 
   return (
-    <PageShell contentStyle={{ paddingBottom: 140 }}>
+    <PageShell contentStyle={{ paddingBottom: 140, width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs }}>
         <h1 style={{ color: colors.textPrimary, fontSize: fontSize.xxl, fontWeight: 800, margin: 0 }}>Ajustes</h1>
         <AddExpenseButton />
@@ -174,6 +174,7 @@ function Row({
     <Pressable
       onClick={onPress}
       style={{
+        width: '100%',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
