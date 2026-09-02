@@ -1,0 +1,30 @@
+import React from 'react';
+import { colors, fontSize, radius, spacing } from '../../../theme/theme';
+
+export const styles: Record<string, React.CSSProperties> = {
+  monthRow: { display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.lg, marginBottom: spacing.lg },
+  monthArrow: { width: 32, height: 32, borderRadius: 16, background: colors.surface, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  monthLabel: { color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 700, minWidth: 140, textAlign: 'center' },
+  totalCard: { display: 'flex', flexDirection: 'column', background: colors.surface, borderRadius: radius.card, padding: spacing.lg, marginBottom: spacing.xl, alignItems: 'center' },
+  totalLabel: { color: colors.textMuted, fontSize: fontSize.xs, fontWeight: 800, letterSpacing: 0.6 },
+  totalValue: { color: colors.accent, fontSize: fontSize.amountSm, fontWeight: 800, lineHeight: 1.1, marginTop: spacing.xs },
+  totalMeta: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: 2 },
+  filterLabel: { color: colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600, marginBottom: spacing.sm, marginTop: spacing.lg },
+  incomeRow: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.surface, borderRadius: radius.card, padding: spacing.md, marginBottom: spacing.sm },
+  payBtn: { background: colors.accent, borderRadius: radius.pill, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.sm },
+  payBtnLabel: { color: colors.black, fontSize: fontSize.xs, fontWeight: 700 },
+  paidBadge: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.accentMuted, borderRadius: radius.pill, paddingLeft: spacing.sm, paddingRight: spacing.sm, paddingTop: 4, paddingBottom: 4, gap: 4 },
+  paidBadgeLabel: { color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 },
+  chipsRow: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  chip: { paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm, borderRadius: radius.pill, background: colors.surface },
+  chipActive: { background: colors.accentMuted, border: `1px solid ${colors.accent}` },
+  chipLabel: { color: colors.textSecondary, fontWeight: 600, fontSize: fontSize.sm },
+  chipLabelActive: { color: colors.accent },
+  divider: { height: 1, background: colors.divider, marginTop: spacing.xl, marginBottom: spacing.lg },
+  dayHeader: { color: colors.accent, fontSize: fontSize.xs, fontWeight: 700, marginBottom: spacing.sm, textTransform: 'uppercase' },
+  txnRow: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.surface, borderRadius: radius.card, padding: spacing.md, marginBottom: spacing.sm },
+  txnLabel: { color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 600, margin: 0 },
+  txnMeta: { color: colors.textMuted, fontSize: fontSize.xs, marginTop: 2, margin: 0 },
+  txnValue: { color: colors.accent, fontSize: fontSize.md, fontWeight: 700, marginLeft: spacing.sm },
+  deleteBtn: { padding: spacing.sm, marginLeft: spacing.xs },
+};

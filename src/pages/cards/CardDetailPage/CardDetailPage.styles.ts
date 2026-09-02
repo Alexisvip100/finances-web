@@ -1,0 +1,143 @@
+import React from 'react';
+import { colors, fontSize, radius, spacing } from '../../../theme/theme';
+
+export const styles: Record<string, React.CSSProperties> = {
+  cardHeader: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  cardName: {
+    color: colors.textPrimary,
+    fontSize: fontSize.xl,
+    fontWeight: 800,
+    margin: 0,
+  },
+  cardBank: {
+    color: colors.textSecondary,
+    fontSize: fontSize.sm,
+    margin: '2px 0 0',
+  },
+  ringContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: `${spacing.lg}px 0`,
+  },
+  statRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
+  },
+  pendingBox: {
+    background: colors.surface,
+    borderRadius: radius.card,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
+  },
+  pendingHeader: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+  },
+  pendingLabel: {
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    fontWeight: 800,
+    letterSpacing: 0.6,
+    margin: 0,
+  },
+  pendingAmount: {
+    color: colors.textPrimary,
+    fontSize: fontSize.xl,
+    fontWeight: 800,
+    margin: 0,
+  },
+  dueBadge: {
+    background: colors.dangerMuted,
+    borderRadius: radius.pill,
+    padding: `${spacing.xs}px ${spacing.md}px`,
+  },
+  dueBadgeText: {
+    color: colors.danger,
+    fontSize: fontSize.xs,
+    fontWeight: 700,
+  },
+  actionsRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginTop: spacing.lg,
+  },
+  actionBtn: {
+    flex: 1,
+  },
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 50,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  },
+  modalBackdrop: {
+    position: 'absolute',
+    inset: 0,
+    background: colors.overlay,
+  },
+  modalSheet: {
+    position: 'relative',
+    background: colors.surfaceAlt,
+    borderTopLeftRadius: radius.card,
+    borderTopRightRadius: radius.card,
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+    maxHeight: '75%',
+    overflowY: 'auto',
+    maxWidth: 720,
+    margin: '0 auto',
+    width: '100%',
+  },
+  dayGroupHeader: {
+    color: colors.accent,
+    fontSize: fontSize.xs,
+    fontWeight: 700,
+    marginBottom: spacing.sm,
+    textTransform: 'uppercase',
+  },
+  txnRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    background: colors.surface,
+    borderRadius: radius.card,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  txnLabel: {
+    color: colors.textPrimary,
+    fontSize: fontSize.md,
+    fontWeight: 600,
+    margin: 0,
+  },
+  txnMeta: {
+    color: colors.textMuted,
+    fontSize: fontSize.xs,
+    marginTop: 2,
+    margin: 0,
+  },
+  txnValue: {
+    color: colors.textPrimary,
+    fontSize: fontSize.md,
+    fontWeight: 700,
+    marginLeft: spacing.sm,
+  },
+  deleteBtn: {
+    padding: spacing.sm,
+    marginLeft: spacing.xs,
+  },
+};
