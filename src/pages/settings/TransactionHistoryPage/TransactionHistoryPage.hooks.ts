@@ -25,6 +25,8 @@ import {
   todayISO,
 } from '../../../utils/dateHelpers';
 import { cardLabel } from '../../../utils/labels';
+import { pushToast } from '../../../notifications/toastBus';
+import { formatMoney } from '../../../utils/currency';
 import type {
   Granularity,
   MethodOption,
@@ -58,6 +60,9 @@ export const useTransactionHistoryPage = (): TransactionHistoryPageTypes => {
   const [onlyFixed, setOnlyFixed] = useState(false);
   const [paidFixedIds, setPaidFixedIds] = useState<Set<number>>(new Set());
   const [markingPaidId, setMarkingPaidId] = useState<number | null>(null);
+  const [payingFixedExpense, setPayingFixedExpense] = useState<FixedExpense | null>(null);
+  const [selectedPaySource, setSelectedPaySource] = useState<{ kind: 'account' | 'card'; id: number } | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCategoriesThunk());
@@ -113,23 +118,73 @@ export const useTransactionHistoryPage = (): TransactionHistoryPageTypes => {
     return `${month}-${String(day).padStart(2, '0')}`;
   };
 
-  const handleMarkPaid = async (fixed: FixedExpense) => {
-    setMarkingPaidId(fixed.id);
+  const openPayModal = (fixed: FixedExpense) => {
+    setPayingFixedExpense(fixed);
+    if (fixed.credit_card_id) {
+      setSelectedPaySource({ kind: 'card', id: fixed.credit_card_id });
+    } else if (fixed.account_id) {
+      setSelectedPaySource({ kind: 'account', id: fixed.account_id });
+    } else if (accounts.length > 0) {
+      setSelectedPaySource({ kind: 'account', id: accounts[0].id });
+    } else if (cards.length > 0) {
+      setSelectedPaySource({ kind: 'card', id: cards[0].id });
+    } else {
+      setSelectedPaySource(null);
+    }
+  };
+
+  const closePayModal = () => {
+    if (isPaying) return;
+    setPayingFixedExpense(null);
+  };
+
+  const confirmPayFixed = async () => {
+    if (!payingFixedExpense || !selectedPaySource) return;
+    setIsPaying(true);
     try {
       await dispatch(
-        payFixedExpenseThunk({ id: fixed.id, transactionDate: resolveDateInViewedMonth(fixed.day_of_month) })
+        payFixedExpenseThunk({
+          id: payingFixedExpense.id,
+          transactionDate: resolveDateInViewedMonth(payingFixedExpense.day_of_month),
+          account_id: selectedPaySource.kind === 'account' ? selectedPaySource.id : undefined,
+          credit_card_id: selectedPaySource.kind === 'card' ? selectedPaySource.id : undefined,
+        })
       ).unwrap();
+      await dispatch(fetchAccountsThunk());
       refreshFixedStatus();
       refresh();
+      const sourceName =
+        selectedPaySource.kind === 'card'
+          ? (() => {
+              const card = cards.find((c) => c.id === selectedPaySource.id);
+              return card ? `${cardLabel(card)} ••••${card.last_four}` : 'Tarjeta';
+            })()
+          : (() => {
+              const acc = accounts.find((a) => a.id === selectedPaySource.id);
+              return acc ? acc.name : 'Cuenta';
+            })();
+      pushToast({
+        kind: 'success',
+        title: 'Gasto fijo pagado',
+        message: `${payingFixedExpense.name} · ${formatMoney(payingFixedExpense.amount)} (${sourceName})`,
+      });
+      setPayingFixedExpense(null);
     } catch {
       // el error ya se muestra desde el banner de arriba
     } finally {
-      setMarkingPaidId(null);
+      setIsPaying(false);
     }
+  };
+
+  const handleMarkPaid = async (fixed: FixedExpense) => {
+    openPayModal(fixed);
   };
 
   const handleDeleteTxn = async (id: number) => {
     await dispatch(deleteTransactionThunk(id));
+    dispatch(fetchAccountsThunk());
+    refreshFixedStatus();
+    refresh();
   };
 
   const categoryById = useMemo(() => {
@@ -226,5 +281,12 @@ export const useTransactionHistoryPage = (): TransactionHistoryPageTypes => {
     handleMarkPaid,
     handleDeleteTxn,
     refresh,
+    payingFixedExpense,
+    selectedPaySource,
+    isPaying,
+    openPayModal,
+    closePayModal,
+    setSelectedPaySource,
+    confirmPayFixed,
   };
 };

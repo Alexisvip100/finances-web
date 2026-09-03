@@ -1,6 +1,7 @@
 import React from 'react';
 import { PageShell } from '../../../components/PageShell';
 import { TopBar } from '../../../components/TopBar';
+import { PrimaryButton } from '../../../components/Buttons';
 import { EmptyState, ErrorBanner, IconCircle } from '../../../components/Misc';
 import { Icon } from '../../../components/Icon';
 import { Portal } from '../../../components/Portal';
@@ -16,6 +17,7 @@ export default function TransactionHistoryPage() {
   const {
     navigate,
     categories,
+    accounts,
     cards,
     activeFixedExpenses,
     error,
@@ -46,6 +48,12 @@ export default function TransactionHistoryPage() {
     handleMarkPaid,
     handleDeleteTxn,
     refresh,
+    payingFixedExpense,
+    selectedPaySource,
+    isPaying,
+    closePayModal,
+    setSelectedPaySource,
+    confirmPayFixed,
   } = useTransactionHistoryPage();
 
   return (
@@ -178,7 +186,12 @@ export default function TransactionHistoryPage() {
       ) : (
         groupedByDay.map(([date, txns]) => (
           <div key={date} style={{ marginBottom: spacing.lg }}>
-            <p style={styles.dayHeader}>{formatShort(date)}</p>
+            <div style={styles.dayHeaderContainer}>
+              <p style={styles.dayHeader}>{formatShort(date)}</p>
+              <div style={styles.dayTotal}>
+                <p style={styles.dayTotalLabel}>Total {formatMoney(txns.reduce((sum, t) => sum + Number(t.amount), 0))}</p>
+              </div>
+            </div>
             {txns.map((t) => {
               const cat = t.category_id !== null ? categoryById[t.category_id] : undefined;
               return (
@@ -243,6 +256,101 @@ export default function TransactionHistoryPage() {
                     {categoryId === c.id ? <Icon name="checkmark" size={16} color={colors.accent} /> : null}
                   </Pressable>
                 ))}
+              </div>
+            </div>
+          </div>
+        </Portal>
+      ) : null}
+
+      {payingFixedExpense ? (
+        <Portal>
+          <div style={styles.modalBackdrop}>
+            <div onClick={closePayModal} style={styles.modalOverlay} />
+            <div style={styles.payModalSheet}>
+              <div style={styles.modalHeader}>
+                <div>
+                  <p style={styles.payModalTitle}>Pagar gasto fijo</p>
+                  <p style={styles.payModalSubtitle}>
+                    {payingFixedExpense.name} · {formatMoney(payingFixedExpense.amount)}
+                  </p>
+                </div>
+                <Pressable onClick={closePayModal} style={{ padding: 4 }}>
+                  <Icon name="close" size={18} color={colors.textSecondary} />
+                </Pressable>
+              </div>
+
+              <p style={styles.payModalSectionLabel}>¿Con qué cuenta o tarjeta pagaste?</p>
+
+              <div style={styles.payModalList}>
+                {accounts.length > 0 ? (
+                  <>
+                    <p style={styles.payModalGroupLabel}>Cuentas y Efectivo</p>
+                    {accounts.map((a) => {
+                      const isSelected = selectedPaySource?.kind === 'account' && selectedPaySource.id === a.id;
+                      return (
+                        <Pressable
+                          key={`acc-${a.id}`}
+                          onClick={() => setSelectedPaySource({ kind: 'account', id: a.id })}
+                          style={{ ...styles.paySourceCard, ...(isSelected ? styles.paySourceCardActive : {}) }}
+                        >
+                          <IconCircle
+                            name={a.type === 'CASH' ? 'cash-outline' : 'business-outline'}
+                            bg={isSelected ? colors.accentMuted : colors.surface}
+                            color={isSelected ? colors.accent : colors.textSecondary}
+                            size={36}
+                          />
+                          <div style={{ flex: 1, marginLeft: spacing.md }}>
+                            <p style={styles.paySourceName}>{accountLabel(a)}</p>
+                            <p style={styles.paySourceMeta}>Saldo: {formatMoney(a.balance)}</p>
+                          </div>
+                          <div style={{ ...styles.radioCircle, ...(isSelected ? styles.radioCircleActive : {}) }}>
+                            {isSelected ? <div style={styles.radioInner} /> : null}
+                          </div>
+                        </Pressable>
+                      );
+                    })}
+                  </>
+                ) : null}
+
+                {cards.length > 0 ? (
+                  <>
+                    <p style={{ ...styles.payModalGroupLabel, marginTop: spacing.md }}>Tarjetas de crédito</p>
+                    {cards.map((c) => {
+                      const isSelected = selectedPaySource?.kind === 'card' && selectedPaySource.id === c.id;
+                      return (
+                        <Pressable
+                          key={`card-${c.id}`}
+                          onClick={() => setSelectedPaySource({ kind: 'card', id: c.id })}
+                          style={{ ...styles.paySourceCard, ...(isSelected ? styles.paySourceCardActive : {}) }}
+                        >
+                          <IconCircle
+                            name="card-outline"
+                            bg={isSelected ? colors.accentMuted : colors.surface}
+                            color={isSelected ? colors.accent : colors.textSecondary}
+                            size={36}
+                          />
+                          <div style={{ flex: 1, marginLeft: spacing.md }}>
+                            <p style={styles.paySourceName}>{cardLabel(c)}</p>
+                            <p style={styles.paySourceMeta}>••••{c.last_four} {c.bank ? `· ${c.bank}` : ''}</p>
+                          </div>
+                          <div style={{ ...styles.radioCircle, ...(isSelected ? styles.radioCircleActive : {}) }}>
+                            {isSelected ? <div style={styles.radioInner} /> : null}
+                          </div>
+                        </Pressable>
+                      );
+                    })}
+                  </>
+                ) : null}
+              </div>
+
+              <div style={styles.payModalActions}>
+                <PrimaryButton
+                  label={isPaying ? 'Registrando pago…' : `Confirmar pago de ${formatMoney(payingFixedExpense.amount)}`}
+                  onPress={confirmPayFixed}
+                  disabled={!selectedPaySource || isPaying}
+                  loading={isPaying}
+                  style={{ width: '100%' }}
+                />
               </div>
             </div>
           </div>

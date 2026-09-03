@@ -36,9 +36,21 @@ export const createTransactionThunk = createAsyncThunk(
 
 export const payFixedExpenseThunk = createAsyncThunk(
   'transactions/payFixedExpense',
-  async ({ id, transactionDate }: { id: number; transactionDate?: string }, { rejectWithValue }) => {
+  async (
+    {
+      id,
+      transactionDate,
+      account_id,
+      credit_card_id,
+    }: { id: number; transactionDate?: string; account_id?: number; credit_card_id?: number },
+    { rejectWithValue }
+  ) => {
     try {
-      return await fixedExpensesApi.payFixedExpense(id, transactionDate);
+      return await fixedExpensesApi.payFixedExpense(id, {
+        transaction_date: transactionDate,
+        account_id,
+        credit_card_id,
+      });
     } catch (error) {
       return rejectWithValue(extractErrorMessage(error));
     }

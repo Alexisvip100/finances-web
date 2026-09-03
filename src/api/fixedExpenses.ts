@@ -38,8 +38,18 @@ export function deleteFixedExpense(id: number) {
   return apiClient.delete(`/fixed-expenses/${id}`).then(() => undefined);
 }
 
-export function payFixedExpense(id: number, transactionDate?: string) {
+export interface PayFixedExpensePayload {
+  transaction_date?: string;
+  account_id?: number;
+  credit_card_id?: number;
+}
+
+export function payFixedExpense(id: number, payload?: PayFixedExpensePayload | string) {
+  const body: PayFixedExpensePayload =
+    typeof payload === 'string'
+      ? { transaction_date: payload }
+      : payload ?? {};
   return apiClient
-    .post<Transaction>(`/fixed-expenses/${id}/pay`, transactionDate ? { transaction_date: transactionDate } : {})
+    .post<Transaction>(`/fixed-expenses/${id}/pay`, body)
     .then((r) => r.data);
 }

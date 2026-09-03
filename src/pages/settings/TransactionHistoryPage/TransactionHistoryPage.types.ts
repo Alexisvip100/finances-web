@@ -49,4 +49,11 @@ export interface TransactionHistoryPageTypes {
   handleMarkPaid: (fixed: FixedExpense) => Promise<void>;
   handleDeleteTxn: (id: number) => Promise<void>;
   refresh: () => void;
+  payingFixedExpense: FixedExpense | null;
+  selectedPaySource: { kind: 'account' | 'card'; id: number } | null;
+  isPaying: boolean;
+  openPayModal: (fixed: FixedExpense) => void;
+  closePayModal: () => void;
+  setSelectedPaySource: (source: { kind: 'account' | 'card'; id: number } | null) => void;
+  confirmPayFixed: () => Promise<void>;
 }
