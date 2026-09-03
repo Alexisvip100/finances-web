@@ -13,7 +13,7 @@ export function AddExpenseButton() {
       scaleTo={0.88}
       style={styles.button}
     >
-      <Icon name="add" size={20} color={colors.black} />
+      <Icon name="add" size={20} color={colors.accentContrast} />
     </Pressable>
   );
 }

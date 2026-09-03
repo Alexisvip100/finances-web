@@ -73,7 +73,7 @@ export default function CategoriesPage() {
                       disabled={saving}
                       style={styles.saveBtn}
                     >
-                      <span style={{ color: colors.black, fontWeight: 700, fontSize: fontSize.sm }}>{saving ? 'Guardando…' : 'Guardar'}</span>
+                      <span style={{ color: colors.accentContrast, fontWeight: 700, fontSize: fontSize.sm }}>{saving ? 'Guardando…' : 'Guardar'}</span>
                     </Pressable>
                   </div>
                 </>
@@ -111,7 +111,7 @@ export default function CategoriesPage() {
           style={styles.addInput}
         />
         <Pressable onClick={handleAdd} style={styles.addBtn}>
-          <Icon name="add" size={18} color={colors.black} />
+          <Icon name="add" size={18} color={colors.accentContrast} />
         </Pressable>
       </div>
     </PageShell>

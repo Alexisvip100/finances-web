@@ -6,6 +6,7 @@
      agresivo a la vista. Este verde es más suave/desaturado, sigue leyéndose
      como "verde de marca" pero sin el efecto neón. */
   --color-accent: #a6d65c;
+  --color-accent-contrast: #000000;
   --color-accent-muted: rgba(166, 214, 92, 0.14);
   --color-warning: #f2b84e;
   --color-warning-muted: rgba(242, 184, 78, 0.14);
@@ -56,18 +57,19 @@
   :root:not([data-theme='dark']) {
     --color-background: #f5f6f8;
     --color-surface: #ffffff;
-    --color-surface-alt: #eef0f3;
-    --color-accent: #6b9b1e;
-    --color-accent-muted: rgba(107, 155, 30, 0.1);
-    --color-warning: #a6690a;
-    --color-warning-muted: rgba(166, 105, 10, 0.12);
-    --color-danger: #d63a41;
-    --color-danger-muted: rgba(214, 58, 65, 0.12);
-    --color-text-primary: #14161a;
-    --color-text-secondary: #5c606b;
-    --color-text-muted: #8b8f9a;
-    --color-divider: #e2e4e8;
-    --color-overlay: rgba(20, 22, 26, 0.5);
+    --color-surface-alt: #f4f4f5;
+    --color-accent: #18181b;
+    --color-accent-contrast: #ffffff;
+    --color-accent-muted: rgba(24, 24, 27, 0.07);
+    --color-warning: #f59e0b;
+    --color-warning-muted: rgba(245, 158, 11, 0.12);
+    --color-danger: #e11d48;
+    --color-danger-muted: rgba(225, 29, 72, 0.12);
+    --color-text-primary: #09090b;
+    --color-text-secondary: #52525b;
+    --color-text-muted: #a1a1aa;
+    --color-divider: #e4e4e7;
+    --color-overlay: rgba(9, 9, 11, 0.45);
   }
 }
 
@@ -75,18 +77,19 @@
 :root[data-theme='light'] {
   --color-background: #f5f6f8;
   --color-surface: #ffffff;
-  --color-surface-alt: #eef0f3;
-  --color-accent: #6b9b1e;
-  --color-accent-muted: rgba(107, 155, 30, 0.1);
-  --color-warning: #a6690a;
-  --color-warning-muted: rgba(166, 105, 10, 0.12);
-  --color-danger: #d63a41;
-  --color-danger-muted: rgba(214, 58, 65, 0.12);
-  --color-text-primary: #14161a;
-  --color-text-secondary: #5c606b;
-  --color-text-muted: #8b8f9a;
-  --color-divider: #e2e4e8;
-  --color-overlay: rgba(20, 22, 26, 0.5);
+  --color-surface-alt: #f4f4f5;
+  --color-accent: #18181b;
+  --color-accent-contrast: #ffffff;
+  --color-accent-muted: rgba(24, 24, 27, 0.07);
+  --color-warning: #f59e0b;
+  --color-warning-muted: rgba(245, 158, 11, 0.12);
+  --color-danger: #e11d48;
+  --color-danger-muted: rgba(225, 29, 72, 0.12);
+  --color-text-primary: #09090b;
+  --color-text-secondary: #52525b;
+  --color-text-muted: #a1a1aa;
+  --color-divider: #e4e4e7;
+  --color-overlay: rgba(9, 9, 11, 0.45);
 }
 
 * {

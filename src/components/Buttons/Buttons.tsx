@@ -12,7 +12,7 @@ export function PrimaryButton({ label, onPress, disabled, loading, style }: BtnP
       disabled={disabled || loading}
       style={{ ...styles.primary(disabled), ...style }}
     >
-      {loading ? <Spinner color={colors.black} /> : label}
+      {loading ? <Spinner color={colors.accentContrast} /> : label}
     </Pressable>
   );
 }

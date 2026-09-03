@@ -12,7 +12,7 @@ export const styles: Record<string, React.CSSProperties> = {
   filterLabel: { color: colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600, marginBottom: spacing.sm, marginTop: spacing.lg },
   incomeRow: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.surface, borderRadius: radius.card, padding: spacing.md, marginBottom: spacing.sm },
   payBtn: { background: colors.accent, borderRadius: radius.pill, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.sm },
-  payBtnLabel: { color: colors.black, fontSize: fontSize.xs, fontWeight: 700 },
+  payBtnLabel: { color: colors.accentContrast, fontSize: fontSize.xs, fontWeight: 700 },
   paidBadge: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.accentMuted, borderRadius: radius.pill, paddingLeft: spacing.sm, paddingRight: spacing.sm, paddingTop: 4, paddingBottom: 4, gap: 4 },
   paidBadgeLabel: { color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 },
   chipsRow: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },

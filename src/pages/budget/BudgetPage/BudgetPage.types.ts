@@ -6,6 +6,8 @@ export interface DonutSegment {
   color: string;
 }
 
+export type CategoryFilterType = 'with_expense' | 'all' | 'without_expense' | 'over_budget';
+
 export interface BudgetPageTypes {
   data: BudgetResponse | null;
   status: 'idle' | 'loading' | 'error';
@@ -15,6 +17,12 @@ export interface BudgetPageTypes {
   monthlyGoal: number | null;
   goalPercent: number | null;
   donutSegments: DonutSegment[];
+  activeDonutIndex: number | null;
+  setActiveDonutIndex: (index: number | null) => void;
+  categoryFilter: CategoryFilterType;
+  setCategoryFilter: (filter: CategoryFilterType) => void;
+  filteredCategories: CategoryBudget[];
+  counts: { all: number; withExpense: number; withoutExpense: number; overBudget: number };
   selectedCategory: CategoryBudget | null;
   editingId: number | null;
   editingName: string;

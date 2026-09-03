@@ -109,7 +109,7 @@ export const dynamicStyles = {
     padding: `${spacing.sm}px ${spacing.lg}px`,
     borderRadius: radius.pill,
     background: active ? colors.accent : 'transparent',
-    color: active ? colors.black : colors.textSecondary,
+    color: active ? colors.accentContrast : colors.textSecondary,
     fontWeight: 700,
     fontSize: fontSize.sm,
   }),

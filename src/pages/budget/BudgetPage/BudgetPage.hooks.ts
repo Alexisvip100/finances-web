@@ -6,7 +6,7 @@ import { updateSpendingGoalThunk } from '../../../store/slices/authSlice';
 import { shiftMonthKey } from '../../../utils/dateHelpers';
 import type { CategoryBudget } from '../../../types';
 import { DONUT_COLORS } from './BudgetPage.styles';
-import type { BudgetPageTypes } from './BudgetPage.types';
+import type { BudgetPageTypes, CategoryFilterType } from './BudgetPage.types';
 
 export const useBudgetPage = (): BudgetPageTypes => {
   const dispatch = useAppDispatch();
@@ -32,19 +32,53 @@ export const useBudgetPage = (): BudgetPageTypes => {
     return data.categories.reduce((acc, c) => acc + Number(c.spent), 0);
   }, [data]);
 
+  const [activeDonutIndex, setActiveDonutIndex] = useState<number | null>(null);
+
   const monthlyGoal = data?.spending_goal ? Number(data.spending_goal) : null;
   const goalPercent = monthlyGoal && monthlyGoal > 0 ? Math.round((totalSpent / monthlyGoal) * 100) : null;
 
   const donutSegments = useMemo(() => {
     if (!data || totalSpent === 0) return [];
-    return data.categories
+    return [...data.categories]
       .filter((c) => Number(c.spent) > 0)
+      .sort((a, b) => Number(b.spent) - Number(a.spent))
       .map((c, i) => ({
         category: c,
         fraction: Number(c.spent) / totalSpent,
         color: DONUT_COLORS[i % DONUT_COLORS.length],
       }));
   }, [data, totalSpent]);
+
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
+
+  const counts = useMemo(() => {
+    if (!data) return { all: 0, withExpense: 0, withoutExpense: 0, overBudget: 0 };
+    let withExpense = 0;
+    let withoutExpense = 0;
+    let overBudget = 0;
+    data.categories.forEach((c) => {
+      const spent = Number(c.spent);
+      const limit = c.monthly_limit ? Number(c.monthly_limit) : null;
+      if (spent > 0) withExpense++;
+      else withoutExpense++;
+      if (limit !== null && limit > 0 && spent >= limit) overBudget++;
+    });
+    return { all: data.categories.length, withExpense, withoutExpense, overBudget };
+  }, [data]);
+
+  const filteredCategories = useMemo(() => {
+    if (!data) return [];
+    return [...data.categories]
+      .filter((c) => {
+        const spent = Number(c.spent);
+        const limit = c.monthly_limit ? Number(c.monthly_limit) : null;
+        if (categoryFilter === 'with_expense') return spent > 0;
+        if (categoryFilter === 'without_expense') return spent === 0;
+        if (categoryFilter === 'over_budget') return limit !== null && limit > 0 && spent >= limit;
+        return true;
+      })
+      .sort((a, b) => Number(b.spent) - Number(a.spent));
+  }, [data, categoryFilter]);
 
   const startEdit = (id: number | null, name: string, limit: string | null) => {
     if (id === null) return;
@@ -123,6 +157,12 @@ export const useBudgetPage = (): BudgetPageTypes => {
     monthlyGoal,
     goalPercent,
     donutSegments,
+    activeDonutIndex,
+    setActiveDonutIndex,
+    categoryFilter,
+    setCategoryFilter,
+    filteredCategories,
+    counts,
     selectedCategory,
     editingId,
     editingName,

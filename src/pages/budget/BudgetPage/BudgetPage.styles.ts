@@ -1,9 +1,20 @@
 import React from 'react';
 import { colors, fontSize, radius, spacing } from '../../../theme/theme';
 
-export const DONUT_COLORS = ['#A8E0A0', '#8FC6E8', '#F2A6C6', '#C6A8E8', '#F2C48F', '#8FE0D1'];
+export const DONUT_COLORS = [
+  '#10B981', // Verde esmeralda
+  '#3B82F6', // Azul eléctrico
+  '#F59E0B', // Ámbar dorado
+  '#8B5CF6', // Violeta intenso
+  '#EC4899', // Rosa fucsia
+  '#06B6D4', // Cian brillante
+  '#F97316', // Naranja vivo
+  '#6366F1', // Índigo
+  '#84CC16', // Lima
+  '#E11D48', // Carmesí / Rojo
+];
 export const DONUT_SIZE = 220;
-export const DONUT_STROKE = 20;
+export const DONUT_STROKE = 22;
 export const DONUT_EASE = [0.32, 0.72, 0, 1] as const;
 
 export const editInputStyle: React.CSSProperties = {

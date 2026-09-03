@@ -75,7 +75,7 @@ export const dynamicStyles = {
     background: active ? colors.accent : 'transparent',
   }),
   modeText: (active: boolean): React.CSSProperties => ({
-    color: active ? colors.black : colors.textSecondary,
+    color: active ? colors.accentContrast : colors.textSecondary,
     fontWeight: 700,
     fontSize: fontSize.sm,
   }),

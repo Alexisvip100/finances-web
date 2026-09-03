@@ -119,7 +119,7 @@ export default function FlowPage() {
             <div key={week.week_index} style={{ marginBottom: spacing.xl }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: spacing.md, marginBottom: spacing.md, position: 'relative' }}>
                 <div style={dynamicStyles.weekBadge(week.week_index === 0)}>
-                  <IconCircle name="calendar" bg="transparent" color={week.week_index === 0 ? colors.black : colors.textSecondary} size={20} />
+                  <IconCircle name="calendar" bg="transparent" color={week.week_index === 0 ? colors.accentContrast : colors.textSecondary} size={20} />
                 </div>
                 <div>
                   <p style={{ color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 800, margin: 0 }}>{weekLabel(week.week_index)}</p>

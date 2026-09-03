@@ -19,7 +19,7 @@ export const styles: Record<string, React.CSSProperties> = {
   },
   modeTabActive: { background: colors.accent },
   modeTabLabel: { color: colors.textSecondary, fontWeight: 700, fontSize: fontSize.xs },
-  modeTabLabelActive: { color: colors.black },
+  modeTabLabelActive: { color: colors.accentContrast },
   input: {
     width: '100%',
     background: colors.surface,

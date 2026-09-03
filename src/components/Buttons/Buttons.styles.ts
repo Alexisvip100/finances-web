@@ -17,7 +17,7 @@ export const styles = {
   primary: (disabled?: boolean): React.CSSProperties => ({
     ...base,
     background: colors.accent,
-    color: colors.black,
+    color: colors.accentContrast,
     opacity: disabled ? 0.5 : 1,
   }),
   secondary: {

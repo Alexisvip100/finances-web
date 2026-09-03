@@ -84,7 +84,7 @@ export default function RegisterPaymentPage() {
             onClick={() => setSource({ kind: 'allocation' })}
             style={{ ...sourceChipStyle, background: source?.kind === 'allocation' ? colors.accent : colors.surface }}
           >
-            <span style={{ color: source?.kind === 'allocation' ? colors.black : colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600 }}>
+            <span style={{ color: source?.kind === 'allocation' ? colors.accentContrast : colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600 }}>
               Apartado de esta tarjeta ({formatMoney(allocated)})
             </span>
           </Pressable>
@@ -95,7 +95,7 @@ export default function RegisterPaymentPage() {
             onClick={() => setSource({ kind: 'account', id: a.id })}
             style={{ ...sourceChipStyle, background: source?.kind === 'account' && source.id === a.id ? colors.accent : colors.surface }}
           >
-            <span style={{ color: source?.kind === 'account' && source.id === a.id ? colors.black : colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600 }}>
+            <span style={{ color: source?.kind === 'account' && source.id === a.id ? colors.accentContrast : colors.textSecondary, fontSize: fontSize.sm, fontWeight: 600 }}>
               {accountLabel(a)}
             </span>
           </Pressable>

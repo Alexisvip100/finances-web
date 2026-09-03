@@ -8,6 +8,7 @@ export const colors = {
   surface: 'var(--color-surface)',
   surfaceAlt: 'var(--color-surface-alt)',
   accent: 'var(--color-accent)',
+  accentContrast: 'var(--color-accent-contrast)',
   accentMuted: 'var(--color-accent-muted)',
   warning: 'var(--color-warning)',
   warningMuted: 'var(--color-warning-muted)',

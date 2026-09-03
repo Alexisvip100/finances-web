@@ -14,7 +14,7 @@ export const styles: Record<string, React.CSSProperties> = {
   paidBadge: { display: 'flex', flexDirection: 'row', alignItems: 'center', background: colors.accentMuted, borderRadius: radius.pill, paddingLeft: spacing.sm, paddingRight: spacing.sm, paddingTop: 4, paddingBottom: 4, gap: 4 },
   paidBadgeLabel: { color: colors.accent, fontSize: fontSize.xs, fontWeight: 700 },
   payBtn: { background: colors.accent, borderRadius: radius.pill, paddingLeft: spacing.md, paddingRight: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.sm },
-  payBtnLabel: { color: colors.black, fontSize: fontSize.xs, fontWeight: 700 },
+  payBtnLabel: { color: colors.accentContrast, fontSize: fontSize.xs, fontWeight: 700 },
   chipsRow: { display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   chip: { paddingLeft: spacing.lg, paddingRight: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.sm, borderRadius: radius.pill, background: colors.surface },
   chipActive: { background: colors.accentMuted, border: `1px solid ${colors.accent}` },

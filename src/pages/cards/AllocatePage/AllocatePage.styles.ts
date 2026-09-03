@@ -113,7 +113,7 @@ export const dynamicStyles = {
     background: active ? colors.accent : colors.surface,
   }),
   accountChipText: (active: boolean): React.CSSProperties => ({
-    color: active ? colors.black : colors.textSecondary,
+    color: active ? colors.accentContrast : colors.textSecondary,
     fontSize: fontSize.sm,
     fontWeight: 600,
   }),

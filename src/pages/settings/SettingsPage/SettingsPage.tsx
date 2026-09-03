@@ -47,7 +47,7 @@ export default function SettingsPage() {
               onClick={() => setMode(opt.value)}
               style={dynamicStyles.themeTab(active)}
             >
-              <Icon name={opt.icon} size={15} color={active ? colors.black : colors.textSecondary} />
+              <Icon name={opt.icon} size={15} color={active ? colors.accentContrast : colors.textSecondary} />
               {opt.label}
             </Pressable>
           );
@@ -103,11 +103,11 @@ export default function SettingsPage() {
             label={f.name}
             value={formatMoney(f.amount)}
             last={idx === fixedExpenses.length - 1}
-            onPress={() => navigate(`/ajustes/fijos/${f.id}`)}
+            onPress={() => navigate(`/ajustes/gastos-fijos/${f.id}`)}
           />
         ))}
       </div>
-      <AddButton label="Agregar gasto fijo" onPress={() => navigate('/ajustes/fijos/nuevo')} />
+      <AddButton label="Agregar gasto fijo" onPress={() => navigate('/ajustes/gastos-fijos/nuevo')} />
 
       <SectionLabel label="General" />
       <div style={{ background: colors.surface, borderRadius: radius.card, paddingLeft: spacing.lg, paddingRight: spacing.lg }}>
@@ -120,7 +120,7 @@ export default function SettingsPage() {
         <Row
           icon="time-outline"
           label="Historial de compras"
-          onPress={() => navigate('/ajustes/historial')}
+          onPress={() => navigate('/ajustes/historial-gastos')}
         />
         <Row
           icon="wallet-outline"
