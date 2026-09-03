@@ -62,7 +62,14 @@ export const useFixedExpenseFormPage = (): FixedExpenseFormPageTypes => {
         await dispatch(
           updateFixedExpenseThunk({
             id: existing.id,
-            payload: { name: name.trim(), amount, day_of_month: Number(dayOfMonth), category_id: categoryId },
+            payload: {
+              name: name.trim(),
+              amount,
+              day_of_month: Number(dayOfMonth),
+              category_id: categoryId,
+              account_id: source.kind === 'account' ? source.id : undefined,
+              credit_card_id: source.kind === 'card' ? source.id : undefined,
+            },
           })
         ).unwrap();
       } else {

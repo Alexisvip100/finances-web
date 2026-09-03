@@ -92,10 +92,8 @@ export default function FixedExpenseFormPage() {
             style={{
               ...styles.chip,
               ...(source?.kind === 'account' && source.id === a.id ? styles.chipActive : {}),
-              ...(isEditing ? styles.chipDisabled : {}),
             }}
-            onClick={() => !isEditing && setSource({ kind: 'account', id: a.id })}
-            disabled={isEditing}
+            onClick={() => setSource({ kind: 'account', id: a.id })}
           >
             <span style={{ ...styles.chipLabel, ...(source?.kind === 'account' && source.id === a.id ? styles.chipLabelActive : {}) }}>
               {accountLabel(a)}
@@ -109,10 +107,8 @@ export default function FixedExpenseFormPage() {
             style={{
               ...styles.chip,
               ...(source?.kind === 'card' && source.id === c.id ? styles.chipActive : {}),
-              ...(isEditing ? styles.chipDisabled : {}),
             }}
-            onClick={() => !isEditing && setSource({ kind: 'card', id: c.id })}
-            disabled={isEditing}
+            onClick={() => setSource({ kind: 'card', id: c.id })}
           >
             <span style={{ ...styles.chipLabel, ...(source?.kind === 'card' && source.id === c.id ? styles.chipLabelActive : {}) }}>
               {cardLabel(c)}
@@ -120,7 +116,6 @@ export default function FixedExpenseFormPage() {
           </button>
         ))}
       </div>
-      {isEditing ? <p style={styles.hint}>El método de pago no se puede cambiar después de crear el gasto fijo</p> : null}
 
       <PrimaryButton
         label={isEditing ? 'Guardar cambios' : 'Guardar gasto fijo'}
