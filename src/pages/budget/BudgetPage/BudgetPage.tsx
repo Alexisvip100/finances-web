@@ -355,7 +355,7 @@ export default function BudgetPage() {
           ) : null}
 
           {filteredCategories.map((c, idx) => {
-            const isEditing = editingId === c.category_id;
+            const isEditing = editingId !== null && editingId === c.category_id;
             const limit = c.monthly_limit ? Number(c.monthly_limit) : null;
             const spent = Number(c.spent);
             const percent = limit && limit > 0 ? Math.min(100, Math.round((spent / limit) * 100)) : null;
@@ -468,12 +468,16 @@ export default function BudgetPage() {
                   {!isEditing ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                       <span style={{ color: colors.textPrimary, fontSize: fontSize.md, fontWeight: 800 }}>{formatMoney(spent)}</span>
-                      <Pressable onClick={() => startEdit(c.category_id, c.category_name, c.monthly_limit)} style={iconBtnStyle}>
-                        <Icon name="pencil-outline" size={15} color={colors.textMuted} />
-                      </Pressable>
-                      <Pressable onClick={() => handleDelete(c.category_id)} disabled={deletingId === c.category_id} style={iconBtnStyle}>
-                        <Icon name="trash-outline" size={15} color={colors.danger} />
-                      </Pressable>
+                      {c.category_id !== null ? (
+                        <>
+                          <Pressable onClick={() => startEdit(c.category_id, c.category_name, c.monthly_limit)} style={iconBtnStyle}>
+                            <Icon name="pencil-outline" size={15} color={colors.textMuted} />
+                          </Pressable>
+                          <Pressable onClick={() => handleDelete(c.category_id)} disabled={deletingId === c.category_id} style={iconBtnStyle}>
+                            <Icon name="trash-outline" size={15} color={colors.danger} />
+                          </Pressable>
+                        </>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>
